@@ -34,15 +34,15 @@
 				"inputs": [
 					{
 						"indexed": false,
-						"internalType": "uint32",
+						"internalType": "uint256",
 						"name": "number",
-						"type": "uint32"
+						"type": "uint256"
 					},
 					{
 						"indexed": false,
-						"internalType": "uint32",
+						"internalType": "uint256",
 						"name": "winLineCount",
-						"type": "uint32"
+						"type": "uint256"
 					},
 					{
 						"indexed": false,
@@ -66,9 +66,9 @@
 							{
 								"components": [
 									{
-										"internalType": "uint32[5]",
+										"internalType": "uint256[5]",
 										"name": "slot",
-										"type": "uint32[5]"
+										"type": "uint256[5]"
 									}
 								],
 								"internalType": "struct SlotMachine.Line[3]",
@@ -97,14 +97,14 @@
 				"name": "doSpin",
 				"outputs": [
 					{
-						"internalType": "uint32",
+						"internalType": "uint256",
 						"name": "",
-						"type": "uint32"
+						"type": "uint256"
 					},
 					{
-						"internalType": "uint32",
+						"internalType": "uint256",
 						"name": "",
-						"type": "uint32"
+						"type": "uint256"
 					},
 					{
 						"internalType": "bool[]",
@@ -213,11 +213,11 @@
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0xf1f75b9e9b69d6e7938271af12d81c913f59c8fa62a2ef6b864d8d20d6a02e79",
+			"keccak256": "0xf3c25f1f268402cf043bbd1321e59383017931c9c19d21066901c47fcb00da7a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2106858e377dfb4ba8c41f10769816df944d69fb9c37c6c5c7a7329308b8bc93",
-				"dweb:/ipfs/QmcJXesHJWwpptewWCv9YjpmzxyrSAt3omyBCAHJGkMrdQ"
+				"bzz-raw://df6a75f4c74424b5a94ac96cc854592db0227f2d4e697f2dae05dfcde29f41e1",
+				"dweb:/ipfs/QmQyqBzbjuBdJ5zBDGakg57MqfYESEdmEWHfHopYUiZSkz"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol": {

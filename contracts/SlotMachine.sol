@@ -12,7 +12,7 @@ contract SlotMachine is Ownable {
     mapping(uint32 => uint32) private _reelCalculator;
 
     struct Line {
-        uint32[5] slot;
+        uint256[5] slot;
     }
     
     struct SpinResult {
@@ -131,40 +131,27 @@ contract SlotMachine is Ownable {
         return winLines[lineIndex];
     }
 
-    event Spinned(uint32 number, uint32 winLineCount, bool[] winLines);
+    event Spinned(uint256 number, uint256 winLineCount, bool[] winLines);
 
-    function doSpin(/*bytes32 _seed*/) public returns(uint32, uint32, bool[] memory) {
+    function doSpin(/*bytes32 _seed*/) public returns(uint256, uint256, bool[] memory) {
         bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
         uint256 randomness = getRandomBase(_seed);
-        uint32 spinNumber = uint32(100000 + (randomness % 100000));
+        uint256 spinNumber = uint256(100000 + (randomness % 100000));
+
 
         
-        Line memory __l1;
-        Line memory __l0;
-        Line memory __l2;
-        
+        SpinResult memory _spinResult;
         
         for (uint32 reelIndex = 0; reelIndex < _reelsCount; reelIndex++) {
-            uint32 reelNumber =  (spinNumber % _div1[reelIndex] / _div2[reelIndex]);
+            uint256 reelNumber =  (spinNumber % _div1[reelIndex] / _div2[reelIndex]);
             if (reelNumber == 9) reelNumber = 0;
             
-            __l1.slot[reelIndex] = reelNumber;
-            __l0.slot[reelIndex] = (reelNumber == 0) ? 8 : (reelNumber - 1);
-            __l2.slot[reelIndex] = (reelNumber == 8) ? 0 : (reelNumber + 1);
-            
+            _spinResult.line[1].slot[reelIndex] = reelNumber;
+            _spinResult.line[0].slot[reelIndex] = (reelNumber == 0) ? 8 : (reelNumber - 1);
+            _spinResult.line[2].slot[reelIndex] = (reelNumber == 8) ? 0 : (reelNumber + 1);
         }
 
-        /*
-        __l1.slot[0] = 1;
-        __l1.slot[1] = 1;
-        __l1.slot[2] = 1;
-        __l1.slot[3] = 1;
-        __l1.slot[4] = 1;
-        */
-        SpinResult memory _spinResult;
-        _spinResult.line[1] = __l1;
-        _spinResult.line[0] = __l0;
-        _spinResult.line[2] = __l2;
+
         
         
         bool[] memory winnedLines = new bool[](winLines.length);
