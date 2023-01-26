@@ -30,6 +30,31 @@
 				"type": "event"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint32",
+						"name": "number",
+						"type": "uint32"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint32",
+						"name": "winLineCount",
+						"type": "uint32"
+					},
+					{
+						"indexed": false,
+						"internalType": "bool[]",
+						"name": "winLines",
+						"type": "bool[]"
+					}
+				],
+				"name": "Spinned",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint32",
@@ -75,6 +100,16 @@
 						"internalType": "uint32",
 						"name": "",
 						"type": "uint32"
+					},
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					},
+					{
+						"internalType": "bool[]",
+						"name": "",
+						"type": "bool[]"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -172,25 +207,17 @@
 		},
 		"optimizer": {
 			"enabled": true,
-			"runs": 99999
+			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0x414dbc145b60cac8a969d123614996d4e5aefef152bb590d11e38970b04bcf73",
+			"keccak256": "0xf1f75b9e9b69d6e7938271af12d81c913f59c8fa62a2ef6b864d8d20d6a02e79",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f8c814229088fc31accd6cd5c0474ef4f3be3f8bd2f696a8498227e48e3b01c7",
-				"dweb:/ipfs/QmSv9KrrtgH3vgwQCbqxkqhXUbXwjhN8YE1YDSZWDEJaoP"
-			]
-		},
-		"hardhat/console.sol": {
-			"keccak256": "0x60b0215121bf25612a6739fb2f1ec35f31ee82e4a8216c032c8243d904ab3aa9",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://6e29880d33dd479bb046ba306993d26ccb779a4b1d94a046cb3567f22948bb4d",
-				"dweb:/ipfs/QmfTY1qzPt5C63Wc7y6JqfZr5899NRvXYdCpyLzR5FXQic"
+				"bzz-raw://2106858e377dfb4ba8c41f10769816df944d69fb9c37c6c5c7a7329308b8bc93",
+				"dweb:/ipfs/QmcJXesHJWwpptewWCv9YjpmzxyrSAt3omyBCAHJGkMrdQ"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol": {

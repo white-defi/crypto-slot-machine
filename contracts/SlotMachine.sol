@@ -3,7 +3,6 @@ pragma solidity ^0.8.12;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/utils/Counters.sol";
-import "hardhat/console.sol";
 
 contract SlotMachine is Ownable {
     using Counters for Counters.Counter;
@@ -38,13 +37,22 @@ contract SlotMachine is Ownable {
     }
 
     function checkWinLine(uint32 lineIndex, SpinResult memory result) public view returns(bool) {
+/*
         uint32 r0 = result.line[winLines[lineIndex][0]].slot[0];
         uint32 r1 = result.line[winLines[lineIndex][1]].slot[1];
         uint32 r2 = result.line[winLines[lineIndex][2]].slot[2];
         uint32 r3 = result.line[winLines[lineIndex][3]].slot[3];
         uint32 r4 = result.line[winLines[lineIndex][4]].slot[4];
-
-        if (r0 == r1 && r1 == r2 && r2 == r3 && r3 == r4) {
+*/
+        if (                /* r0 */                                /* r1 */
+            (result.line[winLines[lineIndex][0]].slot[0] == result.line[winLines[lineIndex][1]].slot[1])
+            &&              /* r1 */                                /* r2 */
+            (result.line[winLines[lineIndex][1]].slot[1] == result.line[winLines[lineIndex][2]].slot[2])
+            &&              /* r2 */                                /* r3 */
+            (result.line[winLines[lineIndex][2]].slot[2] == result.line[winLines[lineIndex][3]].slot[3])
+            &&              /* r3 */                                /* r4 */
+            (result.line[winLines[lineIndex][3]].slot[3] == result.line[winLines[lineIndex][4]].slot[4])
+        ) {
             return true;
         }
         return false;
@@ -123,10 +131,11 @@ contract SlotMachine is Ownable {
         return winLines[lineIndex];
     }
 
-    function doSpin(/*bytes32 _seed*/) public returns(uint32) {
+    event Spinned(uint32 number, uint32 winLineCount, bool[] winLines);
+
+    function doSpin(/*bytes32 _seed*/) public returns(uint32, uint32, bool[] memory) {
         bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
         uint256 randomness = getRandomBase(_seed);
-        console.log("rand", randomness);
         uint32 spinNumber = uint32(100000 + (randomness % 100000));
 
         
@@ -145,25 +154,39 @@ contract SlotMachine is Ownable {
             
         }
 
+        /*
+        __l1.slot[0] = 1;
+        __l1.slot[1] = 1;
+        __l1.slot[2] = 1;
+        __l1.slot[3] = 1;
+        __l1.slot[4] = 1;
+        */
         SpinResult memory _spinResult;
         _spinResult.line[1] = __l1;
         _spinResult.line[0] = __l0;
         _spinResult.line[2] = __l2;
         
-        console.log("Spin number", spinNumber);
-        console.log("Check win lines");
-
-        uint32[] memory winnedLines;
-        uint32 winnedLinesCounter = 0;
+        
+        bool[] memory winnedLines = new bool[](winLines.length);
+        uint32 winLineCount = 0;
         for (uint32 winLine = 0; winLine < winLines.length; winLine++) {
-            bool isWinLine = checkWinLine(winLine, _spinResult);
-            if (isWinLine) {
-                winnedLines[winnedLinesCounter] = winLine;
-                winnedLinesCounter++;
-                console.log("Win line:", winLine);
+            if (                /* r0 */                                /* r1 */
+                (_spinResult.line[winLines[winLine][0]].slot[0] == _spinResult.line[winLines[winLine][1]].slot[1])
+                &&              /* r1 */                                /* r2 */
+                (_spinResult.line[winLines[winLine][1]].slot[1] == _spinResult.line[winLines[winLine][2]].slot[2])
+                &&              /* r2 */                                /* r3 */
+                (_spinResult.line[winLines[winLine][2]].slot[2] == _spinResult.line[winLines[winLine][3]].slot[3])
+                &&              /* r3 */                                /* r4 */
+                (_spinResult.line[winLines[winLine][3]].slot[3] == _spinResult.line[winLines[winLine][4]].slot[4])
+            ) {
+                winLineCount++;
+                winnedLines[winLine] = true;
+            } else {
+                winnedLines[winLine] = false;
             }
         }
 
-        return spinNumber;
+        emit Spinned(spinNumber, winLineCount, winnedLines);
+        return (spinNumber, winLineCount, winnedLines);
     }
 }
