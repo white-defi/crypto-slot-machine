@@ -14,6 +14,95 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "desc",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[5]",
+						"name": "value",
+						"type": "uint256[5]"
+					}
+				],
+				"name": "LogLine",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "desc",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[5][3]",
+						"name": "value",
+						"type": "uint256[5][3]"
+					}
+				],
+				"name": "LogSlots",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					}
+				],
+				"name": "LogString",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "desc",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "value",
+						"type": "uint256"
+					}
+				],
+				"name": "LogUint256",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "desc",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[]",
+						"name": "value",
+						"type": "uint256[]"
+					}
+				],
+				"name": "LogUint256Array",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "previousOwner",
@@ -52,9 +141,27 @@
 					},
 					{
 						"indexed": false,
+						"internalType": "uint256",
+						"name": "winAmount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
 						"internalType": "uint256[5]",
 						"name": "slots",
 						"type": "uint256[5]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[20]",
+						"name": "spinWinLines",
+						"type": "uint256[20]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[20]",
+						"name": "spinWinSlots",
+						"type": "uint256[20]"
 					},
 					{
 						"indexed": false,
@@ -75,7 +182,7 @@
 						"type": "uint256"
 					}
 				],
-				"name": "Spinned",
+				"name": "ReelsSpinned",
 				"type": "event"
 			},
 			{
@@ -95,7 +202,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "betAmount",
+						"name": "bet",
 						"type": "uint256"
 					},
 					{
@@ -124,19 +231,6 @@
 			},
 			{
 				"inputs": [],
-				"name": "getMySlots",
-				"outputs": [
-					{
-						"internalType": "uint256[5]",
-						"name": "",
-						"type": "uint256[5]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "getUserBalance",
 				"outputs": [
 					{
@@ -153,9 +247,9 @@
 				"name": "getWinLines",
 				"outputs": [
 					{
-						"internalType": "uint256[][]",
+						"internalType": "uint256[5][]",
 						"name": "",
-						"type": "uint256[][]"
+						"type": "uint256[5][]"
 					}
 				],
 				"stateMutability": "view",
@@ -190,6 +284,11 @@
 				"name": "playerSpins",
 				"outputs": [
 					{
+						"internalType": "uint256",
+						"name": "spinId",
+						"type": "uint256"
+					},
+					{
 						"internalType": "address",
 						"name": "player",
 						"type": "address"
@@ -211,17 +310,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "winLine",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
 						"name": "winAmount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "winSlot",
 						"type": "uint256"
 					}
 				],
@@ -287,11 +376,11 @@
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0xcd11c7c79d993ddd4fd62870f80bc4caa81a430bf323047ab03e6f46f93b786a",
+			"keccak256": "0xb9ce84c919672eb09c42b9ab13c85875fd33a4ee2ac3888509951b876ee25698",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://831553cbb74f1600b0f1334ddc51de213de564fd1360e567bcf2535ebddc360f",
-				"dweb:/ipfs/QmaMXNMauCUe7XBPFtFPLxjHiME9TrwArc6fjnvkrkTmpX"
+				"bzz-raw://bf41070df080b2f0ddc56f293d35bcc2eaaea1b7310b61829f63e17d798d31a3",
+				"dweb:/ipfs/QmcQFHJnYGuP7Rf1wHG8jhw3zYeFTvK4wTPrVAr31MbfAq"
 			]
 		},
 		"hardhat/console.sol": {
