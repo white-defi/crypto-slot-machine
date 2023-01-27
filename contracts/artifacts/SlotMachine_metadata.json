@@ -34,21 +34,45 @@
 				"inputs": [
 					{
 						"indexed": false,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
 						"internalType": "uint256",
-						"name": "number",
+						"name": "bet",
 						"type": "uint256"
 					},
 					{
 						"indexed": false,
 						"internalType": "uint256",
-						"name": "winLineCount",
+						"name": "lines",
 						"type": "uint256"
 					},
 					{
 						"indexed": false,
-						"internalType": "bool[]",
-						"name": "winLines",
-						"type": "bool[]"
+						"internalType": "uint256[5]",
+						"name": "slots",
+						"type": "uint256[5]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "maxLine",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "maxLineWin",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "maxWinSlot",
+						"type": "uint256"
 					}
 				],
 				"name": "Spinned",
@@ -57,61 +81,31 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint32",
-						"name": "lineIndex",
-						"type": "uint32"
-					},
-					{
-						"components": [
-							{
-								"components": [
-									{
-										"internalType": "uint256[5]",
-										"name": "slot",
-										"type": "uint256[5]"
-									}
-								],
-								"internalType": "struct SlotMachine.Line[3]",
-								"name": "line",
-								"type": "tuple[3]"
-							}
-						],
-						"internalType": "struct SlotMachine.SpinResult",
-						"name": "result",
-						"type": "tuple"
+						"internalType": "uint256",
+						"name": "bets",
+						"type": "uint256"
 					}
 				],
-				"name": "checkWinLine",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
+				"name": "addUserBalance",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "doSpin",
-				"outputs": [
+				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "betAmount",
 						"type": "uint256"
 					},
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "lineCount",
 						"type": "uint256"
-					},
-					{
-						"internalType": "bool[]",
-						"name": "",
-						"type": "bool[]"
 					}
 				],
+				"name": "doSpin",
+				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
 			},
@@ -130,12 +124,38 @@
 			},
 			{
 				"inputs": [],
+				"name": "getMySlots",
+				"outputs": [
+					{
+						"internalType": "uint256[5]",
+						"name": "",
+						"type": "uint256[5]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getUserBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "getWinLines",
 				"outputs": [
 					{
-						"internalType": "uint32[][]",
+						"internalType": "uint256[][]",
 						"name": "",
-						"type": "uint32[][]"
+						"type": "uint256[][]"
 					}
 				],
 				"stateMutability": "view",
@@ -149,6 +169,60 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "playerSpins",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "player",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "bet",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "utx",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lines",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "winLine",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "winAmount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "winSlot",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -213,11 +287,19 @@
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0xf3c25f1f268402cf043bbd1321e59383017931c9c19d21066901c47fcb00da7a",
+			"keccak256": "0xcd11c7c79d993ddd4fd62870f80bc4caa81a430bf323047ab03e6f46f93b786a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://df6a75f4c74424b5a94ac96cc854592db0227f2d4e697f2dae05dfcde29f41e1",
-				"dweb:/ipfs/QmQyqBzbjuBdJ5zBDGakg57MqfYESEdmEWHfHopYUiZSkz"
+				"bzz-raw://831553cbb74f1600b0f1334ddc51de213de564fd1360e567bcf2535ebddc360f",
+				"dweb:/ipfs/QmaMXNMauCUe7XBPFtFPLxjHiME9TrwArc6fjnvkrkTmpX"
+			]
+		},
+		"hardhat/console.sol": {
+			"keccak256": "0x60b0215121bf25612a6739fb2f1ec35f31ee82e4a8216c032c8243d904ab3aa9",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6e29880d33dd479bb046ba306993d26ccb779a4b1d94a046cb3567f22948bb4d",
+				"dweb:/ipfs/QmfTY1qzPt5C63Wc7y6JqfZr5899NRvXYdCpyLzR5FXQic"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol": {

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/utils/Counters.sol";
+import "hardhat/console.sol";
 
 contract SlotMachine is Ownable {
     using Counters for Counters.Counter;
@@ -19,70 +20,72 @@ contract SlotMachine is Ownable {
         Line[3] line;
     }
 
-    uint32[5] private _div1 = [100000, 10000, 1000, 100, 10];
-    uint32[5] private _div2 = [10000, 1000, 100, 100, 1];
-        
-    uint32[][] private winLines;
+    mapping(address => uint256[5]) private _userCurrentSlots;
+    mapping(address => uint256) private _userBalance;
 
-    function getWinLines() public view returns(uint32[][] memory) {
+    uint256 private constant _freeSlot = 2;
+    uint256 private constant _wildSlot = 1;
+    uint256 private constant _scatterSlot = 7;
+    
+    uint256[][] private winLines = [
+        [1, 1, 1, 1, 1],    // 0
+        [0, 0, 0, 0, 0],    // 1
+        [2, 2, 2, 2, 2],    // 2
+
+        [1, 1, 0, 1, 2],    // 3
+        [1, 1, 2, 1, 0],    // 4
+        [1, 0, 1, 2, 1],    // 5
+        [1, 0, 1, 2, 2],    // 6
+        [1, 0, 0, 1, 2],    // 7
+        [1, 2, 1, 0, 1],    // 8
+        [1, 2, 2, 1, 0],    // 9
+        [1, 2, 1, 0, 0],    // 10
+
+        [0, 1, 2, 1, 0],    // 11
+        [0, 1, 1, 1, 2],    // 12
+        [0, 0, 1, 2, 2],    // 13
+        [0, 0, 1, 2, 1],    // 14
+        [0, 0, 0, 1, 2],    // 15
+
+        [2, 1, 0, 1, 2],    // 16
+        [2, 1, 1, 1, 0],    // 17
+        [2, 2, 1, 0, 0],    // 18
+        [2, 2, 1, 0, 1]     // 19
+    ];
+
+    function getWinLines() public view returns(uint256[][] memory) {
         return winLines;
     }
 
     struct Spin {
-        address player;
-        uint256 bit;
-        uint256 utx;
-        uint256 numbers;
-        uint256 prize;
+        address     player;     // Игрок
+        uint256     bet;        // Ставка
+        uint256     utx;        // Время
+        uint256     lines;      // Кол-во линий
+        uint256[5]  slots;      // Выпавшие слоты
+        uint256     winLine;    // Выигрышная линия
+        uint256     winAmount;  // Выигрыш
+        uint256     winSlot;    // Комбинация, которая выиграла
     }
+    mapping(address => Spin[]) public playerSpins;
 
-    function checkWinLine(uint32 lineIndex, SpinResult memory result) public view returns(bool) {
-/*
-        uint32 r0 = result.line[winLines[lineIndex][0]].slot[0];
-        uint32 r1 = result.line[winLines[lineIndex][1]].slot[1];
-        uint32 r2 = result.line[winLines[lineIndex][2]].slot[2];
-        uint32 r3 = result.line[winLines[lineIndex][3]].slot[3];
-        uint32 r4 = result.line[winLines[lineIndex][4]].slot[4];
-*/
-        if (                /* r0 */                                /* r1 */
-            (result.line[winLines[lineIndex][0]].slot[0] == result.line[winLines[lineIndex][1]].slot[1])
-            &&              /* r1 */                                /* r2 */
-            (result.line[winLines[lineIndex][1]].slot[1] == result.line[winLines[lineIndex][2]].slot[2])
-            &&              /* r2 */                                /* r3 */
-            (result.line[winLines[lineIndex][2]].slot[2] == result.line[winLines[lineIndex][3]].slot[3])
-            &&              /* r3 */                                /* r4 */
-            (result.line[winLines[lineIndex][3]].slot[3] == result.line[winLines[lineIndex][4]].slot[4])
-        ) {
-            return true;
-        }
-        return false;
-    }
+    uint256[5][9] private slotMult = [
+        /* 0 apple  */ [ uint256(0), uint256(0), uint256(20),   uint256(80),    uint256(200)],
+        /* 1 bar    */ [ uint256(0), uint256(0), uint256(40),   uint256(400),   uint256(2000)],
+        /* 2 bell   */ [ uint256(0), uint256(8), uint256(15),   uint256(120),   uint256(500)],
+        /* 3 cherry */ [ uint256(0), uint256(2), uint256(8),    uint256(20),    uint256(80)],
+        /* 4 lemon  */ [ uint256(0), uint256(0), uint256(8),    uint256(20),    uint256(80)],
+        /* 5 orange */ [ uint256(0), uint256(0), uint256(20),   uint256(80),    uint256(200)],
+        /* 6 plum   */ [ uint256(0), uint256(0), uint256(8),    uint256(20),    uint256(80)],
+        /* 7 seven  */ [ uint256(0), uint256(0), uint256(20),   uint256(200),   uint256(1000)],
+        /* 8 wmelon */ [ uint256(0), uint256(0), uint256(2),    uint256(5),     uint256(15)]
+    ];
+
+    uint256[5] private _div1 = [100000, 10000, 1000, 100, 10];
+    uint256[5] private _div2 = [10000, 1000, 100, 100, 1];
 
     constructor(
     ) {
-        winLines.push([1, 1, 1, 1, 1]);
-        winLines.push([0, 0, 0, 0, 0]);
-        winLines.push([2, 2, 2, 2, 2]);
-
-        winLines.push([1, 1, 0, 1, 2]);
-        winLines.push([1, 1, 2, 1, 0]);
-        winLines.push([1, 0, 1, 2, 1]);
-        winLines.push([1, 0, 1, 2, 2]);
-        winLines.push([1, 0, 0, 1, 2]);
-        winLines.push([1, 2, 1, 0, 1]);
-        winLines.push([1, 2, 2, 1, 0]);
-        winLines.push([1, 2, 1, 0, 0]);
-
-        winLines.push([0, 1, 2, 1, 0]);
-        winLines.push([0, 1, 1, 1, 2]);
-        winLines.push([0, 0, 1, 2, 2]);
-        winLines.push([0, 0, 1, 2, 1]);
-        winLines.push([0, 0, 0, 1, 2]);
-
-        winLines.push([2, 1, 0, 1, 2]);
-        winLines.push([2, 1, 1, 1, 0]);
-        winLines.push([2, 2, 1, 0, 0]);
-        winLines.push([2, 2, 1, 0, 1]);
     }
 
     bytes32 private _prevSeed = 0x0000000000000000000000000000000000000000000000000000000000000000;
@@ -127,53 +130,127 @@ contract SlotMachine is Ownable {
         return rand;
     }
 
-    function getWinLine(uint32 lineIndex) private view returns(uint32[] storage) {
+    function getWinLine(uint32 lineIndex) private view returns(uint256[] storage) {
         return winLines[lineIndex];
     }
 
-    event Spinned(uint256 number, uint256 winLineCount, bool[] winLines);
+    function getMySlots() public view returns(uint256[5] memory) {
+        return _userCurrentSlots[msg.sender];
+    }
+    
 
-    function doSpin(/*bytes32 _seed*/) public returns(uint256, uint256, bool[] memory) {
-        bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
-        uint256 randomness = getRandomBase(_seed);
-        uint256 spinNumber = uint256(100000 + (randomness % 100000));
+    function checkLine(
+        uint256 currentLine,
+        uint256[5][3] memory _spinResult
+    ) private view returns(
+        uint256,    // Выигрышная линия
+        uint256     // Выигрышная комбинация
+    ) {
+        uint256 matchCount = 0;
 
-
+        uint256 startNotWildReel = 0;
+        uint256 firstSlot;
         
-        SpinResult memory _spinResult;
-        
-        for (uint32 reelIndex = 0; reelIndex < _reelsCount; reelIndex++) {
-            uint256 reelNumber =  (spinNumber % _div1[reelIndex] / _div2[reelIndex]);
-            if (reelNumber == 9) reelNumber = 0;
-            
-            _spinResult.line[1].slot[reelIndex] = reelNumber;
-            _spinResult.line[0].slot[reelIndex] = (reelNumber == 0) ? 8 : (reelNumber - 1);
-            _spinResult.line[2].slot[reelIndex] = (reelNumber == 8) ? 0 : (reelNumber + 1);
-        }
-
-
-        
-        
-        bool[] memory winnedLines = new bool[](winLines.length);
-        uint32 winLineCount = 0;
-        for (uint32 winLine = 0; winLine < winLines.length; winLine++) {
-            if (                /* r0 */                                /* r1 */
-                (_spinResult.line[winLines[winLine][0]].slot[0] == _spinResult.line[winLines[winLine][1]].slot[1])
-                &&              /* r1 */                                /* r2 */
-                (_spinResult.line[winLines[winLine][1]].slot[1] == _spinResult.line[winLines[winLine][2]].slot[2])
-                &&              /* r2 */                                /* r3 */
-                (_spinResult.line[winLines[winLine][2]].slot[2] == _spinResult.line[winLines[winLine][3]].slot[3])
-                &&              /* r3 */                                /* r4 */
-                (_spinResult.line[winLines[winLine][3]].slot[3] == _spinResult.line[winLines[winLine][4]].slot[4])
-            ) {
-                winLineCount++;
-                winnedLines[winLine] = true;
+        // Ищем первый не wild (bar) слот
+        for (uint256 reelIndex = 0; reelIndex < 5; reelIndex++) {
+            if (_spinResult[winLines[currentLine][reelIndex]][reelIndex] != _wildSlot) {
+                startNotWildReel = reelIndex;
+                
+                break;
             } else {
-                winnedLines[winLine] = false;
+                matchCount++;
             }
         }
+        
+        if (matchCount > 0 && slotMult[_wildSlot][matchCount - 1] > 0) {
+            // bars - wild check
+            uint256 currentLineWin = slotMult[_wildSlot][
+                matchCount - 1
+            ];
+            return (currentLineWin, _wildSlot);
+        } else {
+            firstSlot = _spinResult[winLines[currentLine][startNotWildReel]][startNotWildReel];
+            for (uint256 reelIndex = startNotWildReel + 1; reelIndex < 5; reelIndex++) {
+                if (
+                    (_spinResult[winLines[currentLine][reelIndex]][reelIndex] == firstSlot)
+                    || 
+                    (_spinResult[winLines[currentLine][reelIndex]][reelIndex] == _wildSlot)
+                ) {
+                    matchCount++;
+                } else {
+                    break;
+                }
+            }
+            if (matchCount>0) {
+                uint256 currentLineWin = slotMult[firstSlot][
+                    matchCount
+                ];
 
-        emit Spinned(spinNumber, winLineCount, winnedLines);
-        return (spinNumber, winLineCount, winnedLines);
+                return (currentLineWin, firstSlot);
+            }
+        }
+        return (0, 0);
+    }
+    
+    function addUserBalance(uint256 bets) public {
+        _userBalance[msg.sender] += bets;
+    }
+
+    function getUserBalance() public view returns (uint256) {
+        return _userBalance[msg.sender];
+    }
+
+    event Spinned(address user, uint256 bet, uint256 lines, uint256[5] slots, uint256 maxLine, uint256 maxLineWin, uint256 maxWinSlot);
+    function doSpin(uint256 bet, uint256 lineCount /*bytes32 _seed*/) public /* returns(uint256[5] memory, uint256, bool[] memory) */ {
+        uint256 betAmount = bet * (lineCount+1);
+        require(_userBalance[msg.sender] - betAmount >= 0, "Balance");
+        require(lineCount < winLines.length, "Too many lines");
+         
+        bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
+        uint256 randomness = getRandomBase(_seed);
+
+        uint32 spinNumber = uint32(100000 + (randomness % 100000));
+
+        uint256 reelIndex = 0;
+        uint256 reelNumber = 0;
+
+        uint256[5][3] memory _spinResult = [
+            uint256[5]([uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)]),
+            uint256[5]([
+                (spinNumber % _div1[0] / _div2[0]),
+                (spinNumber % _div1[1] / _div2[1]),
+                (spinNumber % _div1[2] / _div2[2]),
+                (spinNumber % _div1[3] / _div2[3]),
+                (spinNumber % _div1[4] / _div2[4])
+            ]),
+            uint256[5]([uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)])
+        ];
+        
+
+        for (reelIndex = 0; reelIndex < _reelsCount; reelIndex++) {
+            reelNumber = _spinResult[1][reelIndex];
+            if (reelNumber == 9) reelNumber = 0;
+            _spinResult[1][reelIndex] = reelNumber;
+            _spinResult[0][reelIndex] = (reelNumber == 0) ? 8 : (reelNumber - 1);
+            _spinResult[2][reelIndex] = (reelNumber == 8) ? 0 : (reelNumber + 1);
+        }
+        _userCurrentSlots[msg.sender] = _spinResult[1];
+
+        uint256 maxLine = 0;
+        uint256 maxLineWin = 0;
+        uint256 maxWinSlot = 0;
+
+        for (uint256 currentLine = 0; currentLine < lineCount; currentLine++) {
+            (uint256 currentLineWin, uint256 winSlot) = checkLine(currentLine, _spinResult);
+            currentLineWin = currentLineWin * bet;
+            if (currentLineWin > maxLineWin) {
+                maxLine = currentLine;
+                maxLineWin = currentLineWin;
+                maxWinSlot = winSlot;
+            }
+        }
+        _userBalance[msg.sender] = _userBalance[msg.sender] - betAmount + maxLineWin;
+        emit Spinned(msg.sender, betAmount, lineCount, _spinResult[1], maxLine, maxLineWin, maxWinSlot);
+
     }
 }
