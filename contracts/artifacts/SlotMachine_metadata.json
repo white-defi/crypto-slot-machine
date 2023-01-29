@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.12+commit.f00d7308"
+		"version": "0.8.7+commit.e28d00a7"
 	},
 	"language": "Solidity",
 	"output": {
@@ -209,6 +209,11 @@
 						"internalType": "uint256",
 						"name": "lineCount",
 						"type": "uint256"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_seed",
+						"type": "bytes32"
 					}
 				],
 				"name": "doSpin",
@@ -376,11 +381,11 @@
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0x03eb3c6083a59dfed748dd8840a8c1b0dc8d3b699190b04c718ca3e4cd9ab853",
+			"keccak256": "0xa722340d6ebc23963b81725996b2e64db4fd03b3b11332d6dd0b11c704e1809c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://078f38c3fcbbd2686a8ffd796196aae848dbdef921f3186ec3e35982447dd12a",
-				"dweb:/ipfs/QmUrReRzYNtuovQLesNRr3uuQeAshQeyYDpuNchzwN2BUG"
+				"bzz-raw://1a8c025c4e719cdc13265bd5165a577bc6f0698ccca21e4c25f225c90ff3c292",
+				"dweb:/ipfs/QmXNXzyNrK7aupDFvKkhNHNcy7ZCE91871tD3wYRmDF4k3"
 			]
 		},
 		"hardhat/console.sol": {

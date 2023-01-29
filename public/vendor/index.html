@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <script type="text/javascript" src="slots.js"></script>
+  </head>
+  <body>
+
+    <div id="wrap">
+
+      <div id="game">
+        <canvas id="slots" width="260" height="160"></canvas><br />
+        <button type="button" onclick="SLOT_MACHINE.spin();">Spin</button>
+        <button type="button" onclick="SLOT_MACHINE.stop([[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3]], () => { console.log('stopped' + new Date()) });">Stop</button>
+        
+        <div>
+          <label>Win line number (0-19):</label>
+          <input type="number" id="wlNumber" value="0" />
+          <label>Color:</label>
+          <input type="text" id="wlColor" />
+          <button type="button" id="renderWinLine">Render win line</button>
+          <button type="button" id="clear">Clear</button>
+          <input type="number" min="0" max="19" id="tt" />
+          <button type="button" id="test">Test</button>
+          <script type="text/javascript">
+            document.getElementById('wlNumber').addEventListener('change', (e) => {
+              const n = document.getElementById('wlNumber').value
+              const c = document.getElementById('wlColor').value
+              SLOT_MACHINE.render_reel()
+              SLOT_MACHINE.render_winLine(n, c)
+            })
+            document.getElementById('renderWinLine').addEventListener('click', (e) => {
+              const n = document.getElementById('wlNumber').value
+              const c = document.getElementById('wlColor').value
+              SLOT_MACHINE.render_winLine(n, c)
+            })
+            document.getElementById('clear').addEventListener('click', (e) => {
+              SLOT_MACHINE.render_reel()
+            })
+            document.getElementById('test').addEventListener('click', (e) => {
+              // ['1', '2', '7', '0', '6']
+              SLOT_MACHINE.setActiveWinLine(document.getElementById('tt').value, [1, 2, 7, 0, 6])
+              //SLOT_MACHINE.
+            })
+          </script>
+      </div>
+    <script type="text/javascript">
+      SLOT_MACHINE.init({
+        canvasId: 'slots',
+        ownAssets: {
+          images: {
+            symbol_0: `images/symbols/apple.png`,
+            symbol_1: `images/symbols/bar.png`,
+            symbol_2: `images/symbols/bell.png`,
+            symbol_3: `images/symbols/cherry.png`,
+            symbol_4: `images/symbols/lemon.png`,
+            symbol_5: `images/symbols/orange.png`,
+            symbol_6: `images/symbols/plum.png`,
+            symbol_7: `images/symbols/seven.png`,
+            symbol_8: `images/symbols/water-melon.png`,
+            reels_bg: `images/reels_bg.png`,
+            win_animation: `images/animation.png`
+          },
+          sounds: {
+            win: `sounds/win.wav`,
+            reel_stop: `sounds/reel_stop.wav`
+          }
+        }
+      })
+    </script>
+
+  </body>
+</html>

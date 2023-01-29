@@ -248,7 +248,7 @@ contract SlotMachine is Ownable {
         uint256 maxWinSlot
     );
     
-    function doSpin(uint256 bet, uint256 lineCount /*bytes32 _seed*/) public /* returns(uint256[5] memory, uint256, bool[] memory) */ {
+    function doSpin(uint256 bet, uint256 lineCount, bytes32 _seed) public /* returns(uint256[5] memory, uint256, bool[] memory) */ {
         uint256 betAmount = bet * (lineCount+1);
         require(_userBalance[msg.sender] >= betAmount, "Balance not enought");
         require(lineCount < winLines.length, "Too many lines");
@@ -256,16 +256,17 @@ contract SlotMachine is Ownable {
         _spinId.increment();
         uint256 currentSpinId = _spinId.current();
 
-        bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
+        //bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
         
-        //uint256[5][3] memory _spinResult = spinReels(_seed);
+        uint256[5][3] memory _spinResult = spinReels(_seed);
         
-        
+        /*
         uint256[5][3] memory _spinResult = [
             [uint256(8), uint256(8), uint256(8), uint256(8), uint256(8)],
             [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
             [uint256(1), uint256(1), uint256(1), uint256(1), uint256(1)]
         ];
+        */
         
 
 

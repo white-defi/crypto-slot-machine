@@ -5,7 +5,7 @@
   let ctx     // context
 
 
-  const assets = {
+  let assets = {
     images: {
       symbol_0: `_MYAPP/vendor/images/symbols/apple.png`,
       symbol_1: `_MYAPP/vendor/images/symbols/bar.png`,
@@ -16,7 +16,8 @@
       symbol_6: `_MYAPP/vendor/images/symbols/plum.png`,
       symbol_7: `_MYAPP/vendor/images/symbols/seven.png`,
       symbol_8: `_MYAPP/vendor/images/symbols/water-melon.png`,
-      reels_bg: `_MYAPP/vendor/images/reels_bg.png`
+      reels_bg: `_MYAPP/vendor/images/reels_bg.png`,
+      win_animation: `_MYAPP/vendor/images/animation.png`,
     },
     sounds: {
       win: `_MYAPP/vendor/sounds/win.wav`,
@@ -90,7 +91,29 @@
   const reelsTemplate = [0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8]
   const reels = [ reelsTemplate, reelsTemplate, reelsTemplate, reelsTemplate, reelsTemplate ]
 
-  const winLines = [
+  let lineColors = [
+    '#9907077a',
+    '#079985a3',
+    '#990795a3',
+    '#179907a3',
+    '#418dff',
+    '#a855f7',
+    '#7d55f7ab',
+    '#f5f755ab',
+    '#f78955e0',
+    '#55f7d9e0',
+    '#9907077a',
+    '#079985a3',
+    '#990795a3',
+    '#179907a3',
+    '#418dff',
+    '#a855f7',
+    '#7d55f7ab',
+    '#f5f755ab',
+    '#f78955e0',
+    '#55f7d9e0',
+  ]
+  let winLines = [
       [1, 1, 1, 1, 1],    // 0
       [0, 0, 0, 0, 0],    // 1
       [2, 2, 2, 2, 2],    // 2
@@ -115,8 +138,18 @@
       [2, 2, 1, 0, 0],    // 18
       [2, 2, 1, 0, 1]     // 19
   ];
-
-  const reel_position = [0, 0, 0, 0, 0]
+  let slotMult = [
+      /* 0 apple  */ [ 0, 0, 20,   80,    200],
+      /* 1 bar    */ [ 0, 0, 40,   400,   2000],
+      /* 2 bell   */ [ 0, 8, 15,   120,   500],
+      /* 3 cherry */ [ 0, 2, 8,    20,    80],
+      /* 4 lemon  */ [ 0, 0, 8,    20,    80],
+      /* 5 orange */ [ 0, 0, 20,   80,    200],
+      /* 6 plum   */ [ 0, 0, 8,    20,    80],
+      /* 7 seven  */ [ 0, 0, 20,   200,   1000],
+      /* 8 wmelon */ [ 0, 0, 2,    5,     15]
+  ];
+  const reel_position = [0 * symbol_size, 1 * symbol_size, 6 * symbol_size, 8 * symbol_size, 5 * symbol_size]
   const stopping_position = [0, 0, 0, 0, 0]
   const start_slowing = [false, false, false, false, false]
   const reel_speed = [0, 0, 0, 0, 0]
@@ -130,9 +163,58 @@
   let maxFps = 0
   let requestTime
 
+  let activeWinLine = -1
+  let previewWinLine = 0
 
+  let winAnimationFrame = 0
+  let winAnimationFrameCount = 14
+  let winAnimationFrameRate = 100
+  let winCombination = [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+  ]
+  const hideWinAnimation = () => {
+    winCombination = [
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0]
+    ]
+  }
+  
+  const animationProcess = () => {
+    winAnimationFrame = (winAnimationFrame == winAnimationFrameCount -1) ? 0 : winAnimationFrame + 1
+    window.setTimeout(animationProcess, winAnimationFrameRate)
+  }
+  window.setTimeout(animationProcess, winAnimationFrameRate)
+  const render_winAnimation = () => {
+    const oX = reel_area_left
+    const oY = reel_area_top
+    const sW = symbol_size
+    const aH = assets_backbuffers.win_animation.height
+    
+    //console.log(a)
+    for (let reelRow = 0; reelRow < 3; reelRow++) {
+      for (let reelCol = 0; reelCol < 5; reelCol++) {
+        if (winCombination[reelRow][reelCol]) {
+          ctx.drawImage(
+            assets_backbuffers.win_animation,
+            winAnimationFrame * aH,
+            0,
+            aH, aH,
+            reelCol * symbol_size,
+            reelRow * symbol_size,
+            symbol_size,
+            symbol_size
+          )
+        }
+      }
+    }
+    
+  }
 
   const draw_symbol = (symbol_index, x, y) => {
+    if (!reelBuffer) return
     var symbol_pixel = symbol_index * symbol_size
     ctx.drawImage(reelBuffer,
       0, symbol_pixel,
@@ -177,6 +259,8 @@
     ctx.rect(reel_area_left, reel_area_top, reel_area_width, reel_area_height)
     ctx.clip()
 
+    render_winAnimation()
+
     let reel_index
     let symbol_offset
     let symbol_index
@@ -199,17 +283,33 @@
 
       }
     }
+    if (activeWinLine != -1) {
+      render_winLine(activeWinLine, lineColors[activeWinLine])
+    }
+    for (let line = 0; line < previewWinLine; line++) {
+      render_winLine(line, lineColors[line])
+    }
   }
 
 
   const mainLoop = async (time) => {
+    if (!_isInited) return
     if (requestTime) {
       fps = Math.round(1000/((performance.now() - requestTime)))
     }
     logic()
-    if (game_state == STATE_SPINUP || game_state == STATE_SPINDOWN) {
+
+/*    
+    if (
+      game_state == STATE_SPINUP || game_state == STATE_SPINDOWN
+      || previewWinLine != -1
+      || activeWinLine != -1
+    ) {
+      */
+      
       render_reel()
-    }
+    //}
+    
     requestTime = time
     if (fps > maxFps) maxFps = fps
     window.requestAnimationFrame((timeRes) => mainLoop(timeRes))
@@ -226,6 +326,60 @@
     [2,3,4,5,6]
   ]
 
+  const _wildSlot = 1
+  const slotUp = (v) => { return v == 0 ? 8 : v - 1 }
+  const slotDw = (v) => { return v == 8 ? 0 : v + 1 }
+  const markWinSlots = (winLine, wSlots) => {
+    const slots = [
+      [slotUp(wSlots[0]), slotUp(wSlots[1]), slotUp(wSlots[2]), slotUp(wSlots[3]), slotUp(wSlots[4])],
+      wSlots,
+      [slotDw(wSlots[0]), slotDw(wSlots[1]), slotDw(wSlots[2]), slotDw(wSlots[3]), slotDw(wSlots[4])]
+    ]
+    winCombination = [
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0]
+    ]
+    let matchCount = 0;
+    let startNotWildReel = 0;
+    let firstSlot;
+
+    // Ищем первый не wild (bar) слот
+
+    for (let reelIndex = 0; reelIndex < 5; reelIndex++) {
+      if (slots[winLines[winLine][reelIndex]][reelIndex] != _wildSlot) {
+        startNotWildReel = reelIndex;
+        winCombination[winLines[winLine][reelIndex]][reelIndex] = 1
+        break;
+      } else {
+        matchCount++;
+        winCombination[winLines[winLine][reelIndex]][reelIndex] = 1
+      }
+    }
+
+    if (matchCount > 0 && slotMult[_wildSlot][matchCount - 1] > 0) {
+        // bars - wild check
+       return winCombination
+    } else {
+      firstSlot = slots[winLines[winLine][startNotWildReel]][startNotWildReel];
+      for (let reelIndex = startNotWildReel + 1; reelIndex < 5; reelIndex++) {
+        if (
+            (slots[winLines[winLine][reelIndex]][reelIndex] == firstSlot)
+            || 
+            (slots[winLines[winLine][reelIndex]][reelIndex] == _wildSlot)
+        ) {
+          matchCount++;
+          winCombination[winLines[winLine][reelIndex]][reelIndex] = 1
+        } else {
+          break;
+        }
+      }
+      if (matchCount>0) {
+        return winCombination
+      }
+    }
+    return winCombination
+  }
   const delay = (ms) => {
     return new Promise((resolve) => {
       setTimeout(() => { resolve() }, ms)
@@ -263,7 +417,8 @@
 
   const logic_spindown = () => {
     if (reel_speed[reel_count-1] == 0) {
-      game_state = STATE_REWARD;
+      game_state = STATE_REWARD
+      onStop()
     }
     for (let i=0; i<reel_count; i++) {
       move_reel(i)
@@ -286,7 +441,7 @@
           if (parseInt(reel_position[i]) <= parseInt(stopping_position[i])) {
             reel_position[i] = stopping_position[i]
             reel_speed[i] = 0
-            if (i == 4) onStop()
+            
             try {
               assets_sounds.reel_stop.currentTime = 0
               assets_sounds.reel_stop.play()
@@ -352,8 +507,20 @@
   let _isInited = false
   const init = (options) => {
     const {
-      canvasId
-    } = options
+      canvasId,
+      ownAssets
+    } = {
+      ownAssets: { images: [], sounds: [] },
+      ...options,
+    }
+    assets.images = {
+      ...assets.images,
+      ...ownAssets.images,
+    }
+    assets.sounds = {
+      ...assets.sounds,
+      ...ownAssets.sounds,
+    }
     can = document.getElementById(canvasId)
     can.width = reel_area_width
     can.height = reel_area_height
@@ -363,8 +530,9 @@
     preloadAssets(() => {
       if (assetsIsLoaded()) {
         prepareReel()
-        render_reel()
+        //render_reel()
         _isInited = true
+        mainLoop()
       }
     })
 
@@ -378,6 +546,23 @@
     render_reel,
     isInited: () => {
       return _isInited
+    },
+    markWinSlots,
+    setPreviewWinLines: (lineCount) => {
+      previewWinLine = lineCount
+    },
+    setActiveWinLine: (lineNumber, slots) => {
+      activeWinLine = lineNumber
+      markWinSlots(lineNumber, slots)
+      assets_sounds.win.currentTime = 0
+      assets_sounds.win.play()
+    },
+    hideActiveWinLine: () => {
+      activeWinLine = -1
+      hideWinAnimation()
+    },
+    getFPS: () => {
+      return fps
     }
   }
 })()
