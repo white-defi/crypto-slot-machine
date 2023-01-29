@@ -107,6 +107,18 @@ const Slots: NextPage = (props) => {
           window.SLOT_MACHINE.init({
             canvasId: 'renderCanvas',
           })
+          const multiplers = window.SLOT_MACHINE.getMultiplers().map((data, key) => {
+            return {
+              id: key,
+              data: data.reverse()
+            }
+          }).sort((a,b) => {
+            return a.data[0] > b.data[0] ? -1 : 1
+          })
+          console.log('>>> multiplers', multiplers)
+          setSlotMultipler((prev) => {
+            return multiplers
+          })
           clearInterval(waitCanvas)
         }
       }, 100)
@@ -136,66 +148,8 @@ const Slots: NextPage = (props) => {
     '#f78955e0',
     '#55f7d9e0',
   ]
-  
-  const _test = {
-    bet: 1,
-    lines: 20,
-    winAmount: 48,
-    slots: [
-      7,
-      6,
-      1,
-      0,
-      2
-    ],
-    spinWinLines: [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      20,
-      0,
-      20,
-      0,
-      8,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    spinWinSlots: [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      7,
-      7,
-      7,
-      6,
-      6,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    maxLine: 8,
-    maxLineWin: 20,
-    maxWinSlot: 7
-  }
+
+  const [ slotMultipler, setSlotMultipler ] = useState(false)
 
   const [ userTokens, setUserTokens ] = useState(0)
   const [ userTokensAdd, setUserTokensAdd ] = useState(0)
@@ -256,11 +210,24 @@ const Slots: NextPage = (props) => {
   const doTest = () => {
     console.log('do test')
     setUserTokensAdd(userTokensAdd + 100)
+    const multiplers = slotMachine.getMultiplers().map((data, key) => {
+    console.log(data,key)
+      return {
+        id: key,
+        data: data.reverse()
+      }
+    }).sort((a,b) => {
+      return a.data[0] > b.data[0] ? -1 : 1
+    })
+    
+    console.log(multiplers)
+    
   }
   
   useEffect(() => {
     if (slotMachine && slotMachine.isInited()) {
       console.log('>>> spinResult',spinResult)
+      
       const newWinLines = []
       const newWinLinesAmount = spinResult.spinWinLines.filter((amount, line) => {
         if (amount > 0) {
@@ -325,8 +292,8 @@ const Slots: NextPage = (props) => {
         console.log(spinData)
         slotMachine.stop(resultSlots, () => {
           console.log('>>> stoped', spinWinLines)
-          setUserTokensAdd((prev) => {
-            return prev + spinData.winAmount
+          setUserTokens((prev) => {
+            return prev + Number(spinData.winAmount)
           })
           setSpinResult(spinData)
         })
@@ -347,7 +314,68 @@ const Slots: NextPage = (props) => {
     }
   }, [activeWeb3, chainId])
 
-
+  const symbols = [
+    `_MYAPP/vendor/images/symbols/apple.png`,
+    `_MYAPP/vendor/images/symbols/bar.png`,
+    `_MYAPP/vendor/images/symbols/bell.png`,
+    `_MYAPP/vendor/images/symbols/cherry.png`,
+    `_MYAPP/vendor/images/symbols/lemon.png`,
+    `_MYAPP/vendor/images/symbols/orange.png`,
+    `_MYAPP/vendor/images/symbols/plum.png`,
+    `_MYAPP/vendor/images/symbols/seven.png`,
+    `_MYAPP/vendor/images/symbols/water-melon.png`,
+  ]
+  const renderSlotMultipler = () => {
+    console.log('>>> render')
+    return (
+      <div className="winTable">
+        <style jsx>
+        {`
+          .winTable IMG {
+            display: block;
+            width: 32px;
+          }
+          .winTable .winHolder {
+            display: flex;
+            border-bottom: 1px solid #FFF;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+          }
+          .winTable .symbolsHolder {
+            display: flex;
+          }
+        `}
+        </style>
+        {slotMultipler.map((mData) => {
+          const notZeroCount = mData.data.map((m) => { return (m>0) ? true : false }).filter((m) => m)
+          
+          return (
+            <div key={mData.id}>
+              {notZeroCount.map((m, mK) => {
+                return (
+                  <div key={mK} className="winHolder">
+                    <div className="symbolsHolder">
+                      {mData.data.map((amount, key) => {
+                        if (mK > key) return null
+                        return (
+                          <>
+                            <img key={key} src={symbols[mData.id]} />
+                          </>
+                        )
+                      })}
+                    </div>
+                    <strong>{mData.data[mK]*betAmount}</strong>
+                  </div>
+                )
+              })}
+            </div>
+          )
+            
+        })}
+      </div>
+    )
+  }
   const connectWithMetamask = async () => {
     doConnectWithMetamask({
       onBeforeConnect: () => { setIsWalletConnecting(true) },
@@ -463,6 +491,11 @@ const Slots: NextPage = (props) => {
           <div>
             <button onClick={doStop}>Stop</button>
           </div>
+          {slotMultipler !== false && (
+            <>
+              {renderSlotMultipler()}
+            </>
+          )}
         </div>
       )}
     </div>

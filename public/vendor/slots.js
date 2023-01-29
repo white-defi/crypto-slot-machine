@@ -561,6 +561,9 @@
       activeWinLine = -1
       hideWinAnimation()
     },
+    getMultiplers: () => {
+      return slotMult
+    },
     getFPS: () => {
       return fps
     }
