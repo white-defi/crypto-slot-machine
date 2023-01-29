@@ -369,7 +369,8 @@
     init,
     spin,
     stop,
-    render_winLine
+    render_winLine,
+    render_reel
   }
 })()
 

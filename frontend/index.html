@@ -10,7 +10,31 @@
       <div id="game">
         <canvas id="slots" width="260" height="160"></canvas><br />
         <button type="button" onclick="SLOT_MACHINE.spin();">Spin</button>
-        <button type="button" onclick="SLOT_MACHINE.stop([[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3]], () => { alert('stopped' + new Date()) });">Stop</button>
+        <button type="button" onclick="SLOT_MACHINE.stop([[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3]], () => { console.log('stopped' + new Date()) });">Stop</button>
+        
+        <div>
+          <label>Win line number (0-19):</label>
+          <input type="number" id="wlNumber" value="0" />
+          <label>Color:</label>
+          <input type="text" id="wlColor" />
+          <button type="button" id="renderWinLine">Render win line</button>
+          <button type="button" id="clear">Clear</button>
+          <script type="text/javascript">
+            document.getElementById('wlNumber').addEventListener('change', (e) => {
+              const n = document.getElementById('wlNumber').value
+              const c = document.getElementById('wlColor').value
+              SLOT_MACHINE.render_reel()
+              SLOT_MACHINE.render_winLine(n, c)
+            })
+            document.getElementById('renderWinLine').addEventListener('click', (e) => {
+              const n = document.getElementById('wlNumber').value
+              const c = document.getElementById('wlColor').value
+              SLOT_MACHINE.render_winLine(n, c)
+            })
+            document.getElementById('clear').addEventListener('click', (e) => {
+              SLOT_MACHINE.render_reel()
+            })
+          </script>
       </div>
     <script type="text/javascript">
       SLOT_MACHINE.init('slots')
