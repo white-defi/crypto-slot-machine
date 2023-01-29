@@ -1,0 +1,50 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  background-position: 20px 0px;
+  background-repeat: no-repeat;
+}
+
+#wrap {
+
+}
+
+#game {
+  width: 200px;
+  text-align: center;
+}
+
+
+button {
+  font-size: 7pt;
+}
+
+#info {
+
+  text-align: left;
+  font-size: 9pt;
+  font-family: arial, helvetica, sans-serif;
+}
+
+#credits {
+  font-size: 10pt;
+}
+
+#log {
+  color: #666666;
+}
+
+#attribution {
+  text-align: right;
+  width: 280px;
+  font-size: 7pt;
+  color: #666666;
+  font-family: arial, helvetica, sans-serif;
+  margin-top: 20px;
+}
+
+#attribution a {
+  color: #6666ff;
+}
+

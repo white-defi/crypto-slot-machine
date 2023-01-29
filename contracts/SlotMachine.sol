@@ -258,15 +258,15 @@ contract SlotMachine is Ownable {
 
         bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
         
-        uint256[5][3] memory _spinResult = spinReels(_seed);
+        //uint256[5][3] memory _spinResult = spinReels(_seed);
         
-        /*
+        
         uint256[5][3] memory _spinResult = [
-            [uint256(8), uint256(8), uint256(8), uint256(8), uint256(7)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(8)],
-            [uint256(1), uint256(1), uint256(1), uint256(1), uint256(7)]
+            [uint256(8), uint256(8), uint256(8), uint256(8), uint256(8)],
+            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
+            [uint256(1), uint256(1), uint256(1), uint256(1), uint256(1)]
         ];
-        */
+        
 
 
         uint256 maxLine = 0;

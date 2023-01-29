@@ -376,11 +376,11 @@
 	},
 	"sources": {
 		"SlotMachine.sol": {
-			"keccak256": "0xb9ce84c919672eb09c42b9ab13c85875fd33a4ee2ac3888509951b876ee25698",
+			"keccak256": "0x03eb3c6083a59dfed748dd8840a8c1b0dc8d3b699190b04c718ca3e4cd9ab853",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://bf41070df080b2f0ddc56f293d35bcc2eaaea1b7310b61829f63e17d798d31a3",
-				"dweb:/ipfs/QmcQFHJnYGuP7Rf1wHG8jhw3zYeFTvK4wTPrVAr31MbfAq"
+				"bzz-raw://078f38c3fcbbd2686a8ffd796196aae848dbdef921f3186ec3e35982447dd12a",
+				"dweb:/ipfs/QmUrReRzYNtuovQLesNRr3uuQeAshQeyYDpuNchzwN2BUG"
 			]
 		},
 		"hardhat/console.sol": {

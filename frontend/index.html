@@ -1,0 +1,18 @@
+<html>
+  <head>
+  </head>
+  <body>
+
+    <div id="wrap">
+
+      <div id="game">
+        <canvas id="slots" width="260" height="160"></canvas><br />
+        <button type="button" onclick="SLOT_MACHINE.spin();">Spin</button>
+        <button type="button" onclick="SLOT_MACHINE.stop([[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3]], () => { alert('stopped' + new Date()) });">Stop</button>
+      </div>
+    <script type="text/javascript">
+      SLOT_MACHINE.init('slots')
+    </script>
+
+  </body>
+</html>
