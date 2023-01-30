@@ -2,6 +2,7 @@ import type { NextPage } from "next"
 import styles from "../styles/Home.module.css"
 import navBlock from "../components/navBlock"
 import adminFormRow from "../components/adminFormRow"
+import TabMain from "../components/settings/TabMain"
 import TabDesign from "../components/settings/TabDesign"
 import TabTexts from "../components/settings/TabTexts"
 
@@ -320,6 +321,7 @@ const Settings: NextPage = (props) => {
     storageDesign,
     storageData,
   }
+  const tabMain = new TabMain(_tabOptions)
   const tabDesign = new TabDesign(_tabOptions)
   const tabTexts = new TabTexts(_tabOptions)
 
@@ -342,8 +344,6 @@ const Settings: NextPage = (props) => {
   /* -------------------------------------------- */
   //console.log('>>> storageData', storageData, showInstallBox, (storageData && !storageData.isInstalled), !isInstalledOnDomain)
 
-
-  
   if (isInstalledOnDomain) showInstallBox = false
   return (
     <div className={styles.container}>
@@ -389,9 +389,7 @@ const Settings: NextPage = (props) => {
                       </ul>
                       <hr className={`${styles.divider} ${styles.spacerTop}`} />
                       {/* -------------------------------------------------*/ }
-                      {activeTab === `main` && (
-                        <div>Main tab</div>
-                      )}
+                      {activeTab === `main` && tabMain.render()}
                       {activeTab === `texts` && tabTexts.render()}
                       {activeTab === `design` && tabDesign.render()}
                       {/* -------------------------------------------------*/ }

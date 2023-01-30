@@ -13,7 +13,7 @@ import crypto from "crypto"
 import { CHAIN_INFO } from "../helpers/constants"
 import { toWei, fromWei } from "../helpers/wei"
 import Script from 'next/script'
-import slotsContractData from "../contracts/artifacts/SlotMachine.json"
+import slotsContractData from "../contracts/source/artifacts/SlotMachine.json"
 import callSlotsMethod from "../helpers/callSlotsMethod"
 import sha256 from 'js-sha256'
 const debugLog = (msg) => { console.log(msg) }
@@ -36,7 +36,9 @@ const Slots: NextPage = (props) => {
     getText,
     getDesign,
   } = props
-  const [ chainId, setChainId ] = useState(5 || storageData?.chainId)
+  const [ chainId, setChainId ] = useState(storageData?.chainId)
+  const [ slotsContractAddress, setSlotsContractAddress ] = useState(storageData?.slotsContractAddress)
+  
 
   const [activeWeb3, setActiveWeb3] = useState(false)
   const [activeChainId, setActiveChainId] = useState(false)
@@ -44,7 +46,7 @@ const Slots: NextPage = (props) => {
   const [address, setAddress] = useState(false)
 
   const [slotsContract, setSlotsContract] = useState(false)
-  const slotsContractAddress = `0xe126dB6481B89DE6F9D7cDef131FD353c64Fc51C`
+
 
   const processError = (error, error_namespace) => {
     let metamaskError = false
@@ -97,6 +99,7 @@ const Slots: NextPage = (props) => {
   }, [storageData])
 
   const [slotMachine, setSlotMachine] = useState(false)
+  
   useEffect(() => {
     if (activeWeb3 && isMetamaskConnected) {
       const waitCanvas = setInterval(() => {
@@ -225,7 +228,7 @@ const Slots: NextPage = (props) => {
   }
   
   useEffect(() => {
-    if (slotMachine && slotMachine.isInited()) {
+    if (slotMachine && slotMachine.isInited() && spinResult && spinResult.spinWinLines) {
       console.log('>>> spinResult',spinResult)
       
       const newWinLines = []
@@ -312,7 +315,7 @@ const Slots: NextPage = (props) => {
     if (chainId) {
       initOnWeb3Ready()
     }
-  }, [activeWeb3, chainId])
+  }, [activeWeb3, chainId, slotsContractAddress])
 
   const symbols = [
     `_MYAPP/vendor/images/symbols/apple.png`,
@@ -327,6 +330,7 @@ const Slots: NextPage = (props) => {
   ]
   const renderSlotMultipler = () => {
     console.log('>>> render')
+    let iKey = 0
     return (
       <div className="winTable">
         <style jsx>
@@ -347,11 +351,11 @@ const Slots: NextPage = (props) => {
           }
         `}
         </style>
-        {slotMultipler.map((mData) => {
+        {slotMultipler.map((mData, kk) => {
           const notZeroCount = mData.data.map((m) => { return (m>0) ? true : false }).filter((m) => m)
-          
+          iKey ++
           return (
-            <div key={mData.id}>
+            <div key={iKey}>
               {notZeroCount.map((m, mK) => {
                 return (
                   <div key={mK} className="winHolder">
@@ -359,9 +363,7 @@ const Slots: NextPage = (props) => {
                       {mData.data.map((amount, key) => {
                         if (mK > key) return null
                         return (
-                          <>
-                            <img key={key} src={symbols[mData.id]} />
-                          </>
+                          <img key={key} src={symbols[mData.id]} />
                         )
                       })}
                     </div>

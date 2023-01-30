@@ -36,6 +36,10 @@ export const getStorageInfo = () => {
 const parseInfo = (info) => {
   const parsed = {
     chainId: '',
+    slotsContractAddress: '',
+    bankTokenAddress: '',
+    bankTokenInfo: {},
+    tokenPrice: 0,
     texts: {},
     design: {}
   }
@@ -86,8 +90,9 @@ export default function useStorage() {
         if (parsed) {
           const { owner } = storageData
 
-          const isBaseConfigReady = ( true || 
+          const isBaseConfigReady = (
             parsed.chainId !== ''
+            && parsed.slotsContractAddress !== ''
           )
 
           setStorageData({

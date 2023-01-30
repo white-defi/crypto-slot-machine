@@ -1,4 +1,4 @@
-import slotsContractData from "../contracts/artifacts/SlotMachine.json"
+import slotsContractData from "../contracts/source/artifacts/SlotMachine.json"
 import Web3 from 'web3'
 import { calcSendArgWithFee } from "./calcSendArgWithFee"
 import { BigNumber } from 'bignumber.js'
