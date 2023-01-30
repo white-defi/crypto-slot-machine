@@ -4,6 +4,7 @@
   let can     // canvas
   let ctx     // context
 
+  const debugBuffers = false
 
   let assets = {
     images: {
@@ -58,7 +59,8 @@
     })
   }
 
-
+  let bgBuffer = null
+  let waBuffer = null
   let reelBuffer = null
 
   // enums
@@ -190,20 +192,18 @@
   const render_winAnimation = () => {
     const oX = reel_area_left
     const oY = reel_area_top
-    const sW = symbol_size
-    const aH = assets_backbuffers.win_animation.height
-    
+
     //console.log(a)
     for (let reelRow = 0; reelRow < 3; reelRow++) {
       for (let reelCol = 0; reelCol < 5; reelCol++) {
         if (winCombination[reelRow][reelCol]) {
           ctx.drawImage(
-            assets_backbuffers.win_animation,
-            winAnimationFrame * aH,
+            waBuffer,
+            winAnimationFrame * symbol_size,
             0,
-            aH, aH,
-            reelCol * symbol_size,
-            reelRow * symbol_size,
+            symbol_size, symbol_size,
+            oX + reelCol * symbol_size,
+            oY + reelRow * symbol_size,
             symbol_size,
             symbol_size
           )
@@ -211,6 +211,23 @@
       }
     }
     
+  }
+
+  const prepareWinAnimation = () => {
+    const bufferHeight = symbol_size
+    const bufferWidth = symbol_size * winAnimationFrameCount
+    const buffer = createBuffer(bufferWidth, bufferHeight)
+    const bCtx = buffer.getContext('2d')
+    bCtx.drawImage(
+      assets_backbuffers.win_animation,
+      0, 0,
+      assets_backbuffers.win_animation.width,
+      assets_backbuffers.win_animation.height,
+      0, 0,
+      bufferWidth,
+      bufferHeight
+    )
+    waBuffer = buffer
   }
 
   const draw_symbol = (symbol_index, x, y) => {
@@ -244,15 +261,9 @@
 
   const render_reel = () => {
     ctx.drawImage(
-      assets_backbuffers.reels_bg,
-      0,
-      0,
-      assets_backbuffers.reels_bg.width,
-      assets_backbuffers.reels_bg.height,
+      bgBuffer,
       reel_area_left,
-      reel_area_top,
-      reel_area_width,
-      reel_area_height
+      reel_area_top
     )
     
     ctx.beginPath()
@@ -476,20 +487,45 @@
   }
 
   //---- Init Functions -----------------------------------------------
-
-  const prepareReel = () => {
+  const createBuffer = (bufferWidth, bufferHeight) => {
     const buffer = document.createElement('CANVAS')
-    const bufferWidth = symbol_size
-    const bufferHeight = symbol_size * 9 * 2
     buffer.width = bufferWidth
     buffer.height = bufferHeight
+    if (debugBuffers) document.body.appendChild(buffer)
     const bCtx = buffer.getContext('2d')
+    bCtx.clearRect(0, 0, bufferWidth, bufferHeight);
     bCtx.beginPath();
-    
-    bCtx.clearRect(0, 0, symbol_size, symbol_size * 9 * 2);
-    bCtx.rect(0, 0, symbol_size, symbol_size * 9 * 2)
+    bCtx.rect(0, 0, bufferWidth, bufferHeight)
     bCtx.clip()
-    bCtx.clearRect(0, 0, symbol_size, symbol_size * 9 * 2)
+    return buffer
+  }
+  
+  const prepareBg = () => {
+    const bufferWidth = reel_area_width
+    const bufferHeight = reel_area_height
+    const buffer = createBuffer(bufferWidth, bufferHeight)
+
+    const bCtx = buffer.getContext('2d')
+
+    bCtx.drawImage(
+      assets_backbuffers.reels_bg,
+      0,
+      0,
+      assets_backbuffers.reels_bg.width,
+      assets_backbuffers.reels_bg.height,
+      0, 0,
+      bufferWidth, bufferHeight
+    )
+    bgBuffer = buffer
+  }
+  
+  const prepareReel = () => {
+    const bufferWidth = symbol_size
+    const bufferHeight = symbol_size * 9 * 2
+    const buffer = createBuffer(bufferWidth, bufferHeight)
+
+    const bCtx = buffer.getContext('2d')
+
     for (let symbolIndex = 0; symbolIndex < 9; symbolIndex++) {
       bCtx.drawImage(
         assets_backbuffers[`symbol_${symbolIndex}`],
@@ -529,7 +565,9 @@
 
     preloadAssets(() => {
       if (assetsIsLoaded()) {
+        prepareBg()
         prepareReel()
+        prepareWinAnimation()
         //render_reel()
         _isInited = true
         mainLoop()

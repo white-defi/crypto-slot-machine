@@ -215,6 +215,7 @@ library SafeMath {
     }
 }
 contract SlotMachine is Ownable {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     event LogString(

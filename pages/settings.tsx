@@ -41,10 +41,9 @@ const storageAddress = '0xafb8f27df1f629432a47214b4e1674cbcbdb02df'
 */
 const settingsTabs = {
   main: `Main settings`,
-  nftconfig: `NFT collection`,
+  rules: `Game rules`,
   texts: `Edit texts`,
   design: `Design`,
-  social: `Social links`
 }
 
 const debugLog = (msg) => { console.log(msg) }
