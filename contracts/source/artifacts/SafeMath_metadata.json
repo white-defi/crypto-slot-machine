@@ -98,11 +98,11 @@
 			]
 		},
 		"source/SlotMachine.sol": {
-			"keccak256": "0xc7cbc351785588d0d886a51b4fad0e4ba5a2adb6950bc026d21f5945da377c6d",
+			"keccak256": "0xf3c5baad4a16e5b70f25597ec058393fab2202473369f987d2ba06d8da8a3366",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://041e6c94733a88a0243d86999f4b3e50df3e1ae46541545cdc652a56fb8420aa",
-				"dweb:/ipfs/QmWFTvL9SkYwS8CV35CEay9gWgM6vvG4Hwegb5bFGAqikc"
+				"bzz-raw://63578e6e1984bbf3f76a7bab2ba04f047ec805e6e5fab9e8a188da66539d0e44",
+				"dweb:/ipfs/QmVYX6oSvxnt6ggVvA3n3c5szGBxb1PsLGKeWAEHF6WrLF"
 			]
 		}
 	},

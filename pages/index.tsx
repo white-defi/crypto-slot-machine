@@ -16,6 +16,9 @@ import Script from 'next/script'
 import slotsContractData from "../contracts/source/artifacts/SlotMachine.json"
 import callSlotsMethod from "../helpers/callSlotsMethod"
 import sha256 from 'js-sha256'
+import BuyTokensModal from "../components/BuyTokensModal"
+import fetchUserSlotsInfo from "../helpers/fetchUserSlotsInfo"
+
 const debugLog = (msg) => { console.log(msg) }
 
 const genSalt = () => {
@@ -35,10 +38,12 @@ const Slots: NextPage = (props) => {
     addNotify,
     getText,
     getDesign,
+    openConfirmWindow,
   } = props
   const [ chainId, setChainId ] = useState(storageData?.chainId)
   const [ slotsContractAddress, setSlotsContractAddress ] = useState(storageData?.slotsContractAddress)
-  
+  const [ bankTokenInfo, setBankTokenInfo ] = useState(storageData?.bankTokenInfo)
+  const [ tokenPriceWei, setTokenPriceWei ] = useState(0)
 
   const [activeWeb3, setActiveWeb3] = useState(false)
   const [activeChainId, setActiveChainId] = useState(false)
@@ -46,7 +51,6 @@ const Slots: NextPage = (props) => {
   const [address, setAddress] = useState(false)
 
   const [slotsContract, setSlotsContract] = useState(false)
-
 
   const processError = (error, error_namespace) => {
     let metamaskError = false
@@ -78,6 +82,19 @@ const Slots: NextPage = (props) => {
         setAddress(accounts[0])
         const _contact = new activeWeb3.eth.Contract(slotsContractData.abi, slotsContractAddress)
         setSlotsContract(_contact)
+        
+        fetchUserSlotsInfo({
+          activeWeb3,
+          activeWallet: accounts[0],
+          address: slotsContractAddress,
+          chainId
+        }).then((answer) => {
+          console.log('>>> answe', answer)
+          setUserTokens(Number(answer.tokensAmount))
+          setTokenPriceWei(answer.tokenPrice)
+        }).catch((err) => {
+          console.log('>>> err', err)
+        })
       }).catch((err) => {
         console.log('>>> initOnWeb3Ready', err)
         processError(err)
@@ -90,6 +107,8 @@ const Slots: NextPage = (props) => {
     }
   }
 
+  
+  
   useEffect(() => {
     if (storageData
       && storageData.chainId
@@ -211,20 +230,27 @@ const Slots: NextPage = (props) => {
   })
   
   const doTest = () => {
-    console.log('do test')
-    setUserTokensAdd(userTokensAdd + 100)
-    const multiplers = slotMachine.getMultiplers().map((data, key) => {
-    console.log(data,key)
-      return {
-        id: key,
-        data: data.reverse()
-      }
-    }).sort((a,b) => {
-      return a.data[0] > b.data[0] ? -1 : 1
+    console.log('>>> slotsContract', slotsContract)
+    slotsContract.methods.getMyBalance().call().then((_userBalance) => {
+      console.log('>>> balance', _userBalance)
+      //setUserTokens(_userBalance)
     })
-    
-    console.log(multiplers)
-    
+  slotsContract.methods.getUserBalance(address).call().then((_userBalance) => {
+      console.log('>>> balance', _userBalance)
+      //setUserTokens(_userBalance)
+    })
+      slotsContract.methods.getBankInTokens().call().then((_userBalance) => {
+      console.log('>>> getBankInTokens', _userBalance)
+      //setUserTokens(_userBalance)
+    })
+    slotsContract.methods.getMultiplers().call().then((_userBalance) => {
+      console.log('>>> getMultiplers', _userBalance)
+      //setUserTokens(_userBalance)
+    })
+    slotsContract.methods.getWinLines().call().then((_userBalance) => {
+      console.log('>>> getWinLines', _userBalance)
+      //setUserTokens(_userBalance)
+    })
   }
   
   useEffect(() => {
@@ -264,6 +290,9 @@ const Slots: NextPage = (props) => {
         console.log('>> onTrx', txHash)
         slotMachine.setPreviewWinLines(-1)
         slotMachine.spin()
+        setUserTokens((prev) => {
+          return prev - (betAmount * lineCount)
+        })
         //addNotify(`NFT mint TX ${txHash}`, `success`)
       },
       onSuccess: (receipt) => {
@@ -275,6 +304,7 @@ const Slots: NextPage = (props) => {
         //addNotify(`Fail mint NFT. ${err.message ? err.message : ''}`, `error`)
       },
       onFinally: (answer) => {
+        
         console.log('>> onFinally', answer)
         const spinData = answer.events.ReelsSpinned.returnValues
         const {
@@ -329,7 +359,7 @@ const Slots: NextPage = (props) => {
     `_MYAPP/vendor/images/symbols/water-melon.png`,
   ]
   const renderSlotMultipler = () => {
-    console.log('>>> render')
+    return null
     let iKey = 0
     return (
       <div className="winTable">
@@ -408,6 +438,10 @@ const Slots: NextPage = (props) => {
     }
   }, [lineCount, slotMachine])
 
+  const [ isBuyTokens, setIsBuyTokens ] = useState(false)
+  const buyTokens = () => {
+    setIsBuyTokens(true)
+  }
   const mintChainInfo = CHAIN_INFO(chainId)
   return (
     <div className={styles.container}>
@@ -460,6 +494,11 @@ const Slots: NextPage = (props) => {
           <div>Slot machine</div>
           <div className="balanceHolder">
             <div>
+              <button onClick={buyTokens}>Add tokens</button>
+            </div>
+          </div>
+          <div className="balanceHolder">
+            <div>
               <label>Tokens:</label>
               <strong>{userTokens}</strong>
             </div>
@@ -497,6 +536,22 @@ const Slots: NextPage = (props) => {
             <>
               {renderSlotMultipler()}
             </>
+          )}
+          {isBuyTokens && (
+            <BuyTokensModal {...{
+              activeWeb3,
+              activeWallet: address,
+              openConfirmWindow,
+              addNotify,
+              chainId,
+              slotsContractAddress,
+              bankTokenInfo,
+              tokenPriceWei,
+              onClose: () => { setIsBuyTokens(false) },
+              onBuy: () => {
+                setIsBuyTokens(false)
+              }
+            }} />
           )}
         </div>
       )}

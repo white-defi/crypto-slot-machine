@@ -240,7 +240,6 @@ contract SlotMachine is Ownable {
     Counters.Counter private _spinId;
     // Кол-во барабанов
     uint32 private _reelsCount = 5;
-    mapping(uint32 => uint32) private _reelCalculator;
 
     mapping(address => uint256) private _userBalance;
 
@@ -361,7 +360,7 @@ contract SlotMachine is Ownable {
         _prevSeed = _seed;
         return randomness;
     }
-    
+
     function getRandom(bytes32 _seed, uint256 maxValue) private returns (uint256){
         uint256 randomness = getRandomBase(_seed);
         uint256 rand = randomness % maxValue;
@@ -480,7 +479,10 @@ contract SlotMachine is Ownable {
         _userBalance[msg.sender] += bets;
     }
 
-    function getUserBalance() public view returns (uint256) {
+    function getUserBalance(address user) public view returns (uint256) {
+        return _userBalance[user];
+    }
+    function getMyBalance() public view returns (uint256) {
         return _userBalance[msg.sender];
     }
 

@@ -10,25 +10,6 @@ const menus = [
     title: 'Home',
     link: 'index'
   },
-  ...(
-    getBoolOption( `EnabledDemoMind` , true ) ? [
-      {
-        id: 'mint',
-        title: 'Mint NFT',
-        link: 'mint'
-      },
-    ] : []
-  ),
-  {
-    id: 'marketplace',
-    title: 'Marketplace',
-    link: 'marketplace'
-  },
-  {
-    id: 'stake',
-    title: 'Stake',
-    link: 'stake'
-  },
   {
     id: 'settings',
     title: 'Settings',
