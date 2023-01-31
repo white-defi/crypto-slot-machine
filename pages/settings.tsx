@@ -5,6 +5,8 @@ import adminFormRow from "../components/adminFormRow"
 import TabMain from "../components/settings/TabMain"
 import TabDesign from "../components/settings/TabDesign"
 import TabTexts from "../components/settings/TabTexts"
+import TabGameSettings from "../components/settings/TabGameSettings"
+
 
 import useStorage from "../storage/"
 import { useEffect, useState } from "react"
@@ -35,13 +37,10 @@ import {
   CHAIN_EXPLORER_LINK
 } from "../helpers/constants"
 
-/*
-const storageChainId = 5
-const storageAddress = '0xafb8f27df1f629432a47214b4e1674cbcbdb02df'
-*/
+
 const settingsTabs = {
   main: `Main settings`,
-  rules: `Game rules`,
+  gamesettings: `Game settings`,
   texts: `Edit texts`,
   design: `Design`,
 }
@@ -77,6 +76,7 @@ const Settings: NextPage = (props) => {
     setDoReloadStorage,
     storageTexts,
     storageDesign,
+    getDesign,
   } = props
 
   const [activeChainId, setActiveChainId] = useState(false)
@@ -319,8 +319,11 @@ const Settings: NextPage = (props) => {
     getActiveChain,
     storageDesign,
     storageData,
+    activeWeb3,
+    getDesign,
   }
   const tabMain = new TabMain(_tabOptions)
+  const tabGameSettings = new TabGameSettings(_tabOptions)
   const tabDesign = new TabDesign(_tabOptions)
   const tabTexts = new TabTexts(_tabOptions)
 
@@ -389,6 +392,7 @@ const Settings: NextPage = (props) => {
                       <hr className={`${styles.divider} ${styles.spacerTop}`} />
                       {/* -------------------------------------------------*/ }
                       {activeTab === `main` && tabMain.render()}
+                      {activeTab === `gamesettings` && tabGameSettings.render()}
                       {activeTab === `texts` && tabTexts.render()}
                       {activeTab === `design` && tabDesign.render()}
                       {/* -------------------------------------------------*/ }

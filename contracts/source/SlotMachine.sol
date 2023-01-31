@@ -251,6 +251,29 @@ contract SlotMachine is Ownable {
     uint256 private constant _wildSlot = 1;
     uint256 private constant _scatterSlot = 7;
     
+    function getWildSlot() public view returns (uint256) {
+        return _wildSlot;
+    }
+    function setWildSlot(uint256 _newWildSlot) public onlyOwner {
+        _wildSlot = _newWildSlot;
+    }
+
+    uint256 private _maxBet = 100;
+    uint256 private _maxLines = 19;
+
+    function getMaxBet() public view returns (uint256) {
+        return _maxBet;
+    }
+    function setMaxBet(uint256 newMaxBet) public onlyOwner {
+        _maxBet = newMaxBet;
+    }
+
+    function getMaxLines() public view returns (uint256) {
+        return _maxLines;
+    }
+    function setMaxLines(uint256 newMaxLines) public onlyOwner {
+        _maxLines = newMaxLines;
+    }
     uint256[5][] private winLines = [
         [1, 1, 1, 1, 1],    // 0
         [0, 0, 0, 0, 0],    // 1
@@ -328,6 +351,8 @@ contract SlotMachine is Ownable {
     bytes32 private _prevSeed = 0x0000000000000000000000000000000000000000000000000000000000000000;
     bytes32 private _curRS    = 0x0000000000000000000000000000000000000000000000000000000000000000;
     bytes32 private _prevRS   = 0x0000000000000000000000000000000000000000000000000000000000000000;
+
+
     function flushRandom(bytes32 _flushSeed) public onlyOwner {
         uint256 randomness = uint256(keccak256(abi.encodePacked(
             block.timestamp,
