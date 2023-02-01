@@ -237,6 +237,16 @@ contract SlotMachine is Ownable {
         string desc,
         uint256[5] value
     );
+    struct Spin {
+        uint256     spinId;
+        address     player;     // Игрок
+        uint256     bet;        // Ставка
+        uint256     utx;        // Время
+        uint256     lines;      // Кол-во линий
+        uint256[5]  slots;      // Выпавшие слоты
+        uint256     winAmount;  // Выигрыш
+    }
+    mapping(address => Spin[]) public playerSpins;
     using Counters for Counters.Counter;
     Counters.Counter private _spinId;
     // Кол-во барабанов
@@ -247,9 +257,7 @@ contract SlotMachine is Ownable {
     IERC20 public currency;
     uint256 public tokenPrice = 1;
 
-    uint256 private constant _freeSlot = 2;
-    uint256 private constant _wildSlot = 1;
-    uint256 private constant _scatterSlot = 7;
+    uint256 private _wildSlot = 1;
     
     function getWildSlot() public view returns (uint256) {
         return _wildSlot;
@@ -307,16 +315,21 @@ contract SlotMachine is Ownable {
         return winLines;
     }
 
-    struct Spin {
-        uint256     spinId;
-        address     player;     // Игрок
-        uint256     bet;        // Ставка
-        uint256     utx;        // Время
-        uint256     lines;      // Кол-во линий
-        uint256[5]  slots;      // Выпавшие слоты
-        uint256     winAmount;  // Выигрыш
+    function saveSettings(
+        uint256 newTokenPrice,
+        uint256 newMaxBet,
+        uint256 newMaxLines,
+        uint256 newWildSlot,
+        uint256[5][9] memory newWinCombinations
+    ) public onlyOwner {
+        tokenPrice = newTokenPrice;
+        _maxBet = newMaxBet;
+        _maxLines = newMaxLines;
+        _wildSlot = newWildSlot;
+        slotMult = newWinCombinations;
     }
-    mapping(address => Spin[]) public playerSpins;
+
+
 
     uint256[5][9] private slotMult = [
         /* 0 apple  */ [ uint256(0), uint256(0), uint256(20),   uint256(80),    uint256(200)],

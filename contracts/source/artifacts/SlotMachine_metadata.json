@@ -299,6 +299,32 @@
 			},
 			{
 				"inputs": [],
+				"name": "getMaxBet",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getMaxLines",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "getMultiplers",
 				"outputs": [
 					{
@@ -345,6 +371,19 @@
 					}
 				],
 				"name": "getUserBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getWildSlot",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -440,12 +479,71 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "newTokenPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "newMaxBet",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "newMaxLines",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "newWildSlot",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256[5][9]",
+						"name": "newWinCombinations",
+						"type": "uint256[5][9]"
+					}
+				],
+				"name": "saveSettings",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "newCurrency",
 						"type": "address"
 					}
 				],
 				"name": "setCurrency",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "newMaxBet",
+						"type": "uint256"
+					}
+				],
+				"name": "setMaxBet",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "newMaxLines",
+						"type": "uint256"
+					}
+				],
+				"name": "setMaxLines",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -472,6 +570,19 @@
 					}
 				],
 				"name": "setTokenPrice",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_newWildSlot",
+						"type": "uint256"
+					}
+				],
+				"name": "setWildSlot",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -625,11 +736,11 @@
 			]
 		},
 		"source/SlotMachine.sol": {
-			"keccak256": "0x85fa522836d4d6923f8b88e66cf066e58063c08e9dd7adc7234b150b5bedfc82",
+			"keccak256": "0xd254c4cf01fec219b41a28285cc0240bed3de1c1e3471e6dfdf82e5a1cdd9dd2",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3931c08f25ff493db544b579e93ed16bc083da2710e08f75cebe82c82b9cb285",
-				"dweb:/ipfs/QmboDri3L9WdQw3SNhijPGZmoFsKwhk7fNSVWfEaQuJoLF"
+				"bzz-raw://256cfd80b11611c370779a975aa056cf3d05ea3f209e45643596d8e1829846cd",
+				"dweb:/ipfs/QmaGHccSA4NxMuwjZr6wht2KgEaMAusf7zQNvPJhyCd24V"
 			]
 		}
 	},

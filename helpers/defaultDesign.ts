@@ -15,4 +15,9 @@ export const defaultDesign = {
   symbol_6: `/_MYAPP/vendor/images/symbols/plum.png`,
   symbol_7: `/_MYAPP/vendor/images/symbols/seven.png`,
   symbol_8: `/_MYAPP/vendor/images/symbols/water-melon.png`,
+
+  reel_bg: `/_MYAPP/vendor/images/reel_bg.png`,
+  win_animation: `/_MYAPP/vendor/images/animation.png`,
+  
+  slotSize: 32,
 }

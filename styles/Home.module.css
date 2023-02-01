@@ -777,6 +777,10 @@
   display: block;
   width: 100%;
 }
+.adminForm .subFormInfo .infoRow INPUT[type="number"] {
+  display: block;
+  width: 120px;
+}
 .adminForm .subFormInfo .infoRow BUTTON {
   padding-top: 0px;
   padding-bottom: 0px;

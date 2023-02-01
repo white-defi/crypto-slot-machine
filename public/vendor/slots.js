@@ -17,7 +17,7 @@
       symbol_6: `_MYAPP/vendor/images/symbols/plum.png`,
       symbol_7: `_MYAPP/vendor/images/symbols/seven.png`,
       symbol_8: `_MYAPP/vendor/images/symbols/water-melon.png`,
-      reels_bg: `_MYAPP/vendor/images/reels_bg.png`,
+      reel_bg: `_MYAPP/vendor/images/reel_bg.png`,
       win_animation: `_MYAPP/vendor/images/animation.png`,
     },
     sounds: {
@@ -59,6 +59,8 @@
     })
   }
 
+  let mainBackBuffer = null
+  let backbuffer = null
   let bgBuffer = null
   let waBuffer = null
   let reelBuffer = null
@@ -72,19 +74,22 @@
   // config
   const reel_area_left = 0
   const reel_area_top = 0
-  const reel_area_width = 320
-  const reel_area_height = 192
+  const slotSize = 64
   const reel_count = 5
-  const reel_positions = 27
-  const symbol_size = 64
-  const symbol_count = 9
-  const reel_pixel_length = 9 * 4 * symbol_size
-
-  const reelHeight = reel_positions * symbol_size
-  const reelScrollHeight = 9 * symbol_size * 2
-  const reelStopMaxOffset = reel_positions * symbol_size * 3;
   const row_count = 3;
-  const stopping_distance = reel_positions * symbol_size;
+  const reel_area_width = slotSize * reel_count
+  const reel_area_height = slotSize * row_count
+  
+  const reel_positions = 27
+  
+  const symbol_count = 9
+  const reel_pixel_length = 9 * 4 * slotSize
+
+  const reelHeight = reel_positions * slotSize
+  const reelScrollHeight = 9 * slotSize * 2
+  const reelStopMaxOffset = reel_positions * slotSize * 3;
+  
+  const stopping_distance = reel_positions * slotSize;
   const max_reel_speed = 32;
   const spinup_acceleration = 1;
   const spindown_acceleration = 0.1;
@@ -151,7 +156,7 @@
       /* 7 seven  */ [ 0, 0, 20,   200,   1000],
       /* 8 wmelon */ [ 0, 0, 2,    5,     15]
   ];
-  const reel_position = [0 * symbol_size, 1 * symbol_size, 6 * symbol_size, 8 * symbol_size, 5 * symbol_size]
+  const reel_position = [0 * slotSize, 1 * slotSize, 6 * slotSize, 8 * slotSize, 5 * slotSize]
   const stopping_position = [0, 0, 0, 0, 0]
   const start_slowing = [false, false, false, false, false]
   const reel_speed = [0, 0, 0, 0, 0]
@@ -197,15 +202,15 @@
     for (let reelRow = 0; reelRow < 3; reelRow++) {
       for (let reelCol = 0; reelCol < 5; reelCol++) {
         if (winCombination[reelRow][reelCol]) {
-          ctx.drawImage(
+          backbuffer.drawImage(
             waBuffer,
-            winAnimationFrame * symbol_size,
+            winAnimationFrame * slotSize,
             0,
-            symbol_size, symbol_size,
-            oX + reelCol * symbol_size,
-            oY + reelRow * symbol_size,
-            symbol_size,
-            symbol_size
+            slotSize, slotSize,
+            oX + reelCol * slotSize,
+            oY + reelRow * slotSize,
+            slotSize,
+            slotSize
           )
         }
       }
@@ -214,8 +219,8 @@
   }
 
   const prepareWinAnimation = () => {
-    const bufferHeight = symbol_size
-    const bufferWidth = symbol_size * winAnimationFrameCount
+    const bufferHeight = slotSize
+    const bufferWidth = slotSize * winAnimationFrameCount
     const buffer = createBuffer(bufferWidth, bufferHeight)
     const bCtx = buffer.getContext('2d')
     bCtx.drawImage(
@@ -230,45 +235,52 @@
     waBuffer = buffer
   }
 
+  const prepareMainBackBuffer = () => {
+    const bufferWidth = reel_area_left + slotSize * reel_count
+    const bufferHeight = reel_area_top +  slotSize * row_count
+    mainBackBuffer = createBuffer(bufferWidth, bufferHeight)
+    backbuffer = mainBackBuffer.getContext('2d')
+  }
+
   const draw_symbol = (symbol_index, x, y) => {
     if (!reelBuffer) return
-    var symbol_pixel = symbol_index * symbol_size
-    ctx.drawImage(reelBuffer,
+    var symbol_pixel = symbol_index * slotSize
+    backbuffer.drawImage(reelBuffer,
       0, symbol_pixel,
-      symbol_size, symbol_size,
+      slotSize, slotSize,
       x + reel_area_left, y + reel_area_top,
-      symbol_size, symbol_size
+      slotSize, slotSize
     )
   }
 
   const render_winLine = (lineIndex, color) => {
-    ctx.beginPath();
+    backbuffer.beginPath();
     const oX = reel_area_left
     const oY = reel_area_top
-    const sH = symbol_size / 2
-    const sW = symbol_size
+    const sH = slotSize / 2
+    const sW = slotSize
     
-    ctx.moveTo(oX, oY + winLines[lineIndex][0] * sW + sH)
-    ctx.lineTo(oX + sH, oY + winLines[lineIndex][0] * sW + sH)
+    backbuffer.moveTo(oX, oY + winLines[lineIndex][0] * sW + sH)
+    backbuffer.lineTo(oX + sH, oY + winLines[lineIndex][0] * sW + sH)
     for (let reel = 1; reel < 5; reel++ ) {
-      ctx.lineTo(oX + sH + reel * sW, oY + winLines[lineIndex][reel] * sW + sH)
+      backbuffer.lineTo(oX + sH + reel * sW, oY + winLines[lineIndex][reel] * sW + sH)
     }
-    ctx.lineTo(oX + 5 * sW + sW, oY + winLines[lineIndex][4] * sW + sH)
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = color || '#84c702d9'
-    ctx.stroke()
+    backbuffer.lineTo(oX + 5 * sW + sW, oY + winLines[lineIndex][4] * sW + sH)
+    backbuffer.lineWidth = 10;
+    backbuffer.strokeStyle = color || '#84c702d9'
+    backbuffer.stroke()
   }
 
   const render_reel = () => {
-    ctx.drawImage(
+    backbuffer.drawImage(
       bgBuffer,
       reel_area_left,
       reel_area_top
     )
     
-    ctx.beginPath()
-    ctx.rect(reel_area_left, reel_area_top, reel_area_width, reel_area_height)
-    ctx.clip()
+    backbuffer.beginPath()
+    backbuffer.rect(reel_area_left, reel_area_top, reel_area_width, reel_area_height)
+    backbuffer.clip()
 
     render_winAnimation()
 
@@ -281,14 +293,14 @@
     for (let i=0; i<reel_count; i++) {
       for (let j=0; j<row_count +1; j++) {
 
-        reel_index = Math.floor(reel_position[i] / symbol_size) + j
-        symbol_offset = reel_position[i] % symbol_size;
+        reel_index = Math.floor(reel_position[i] / slotSize) + j
+        symbol_offset = reel_position[i] % slotSize;
    
         if (reel_index >= reel_positions) reel_index -= reel_positions
         symbol_index = reels[i][reel_index]
 
-        x = i * symbol_size
-        y = j * symbol_size - symbol_offset
+        x = i * slotSize
+        y = j * slotSize - symbol_offset
 
         draw_symbol(symbol_index, x, y)
 
@@ -310,17 +322,21 @@
     }
     logic()
 
-/*    
-    if (
-      game_state == STATE_SPINUP || game_state == STATE_SPINDOWN
-      || previewWinLine != -1
-      || activeWinLine != -1
-    ) {
-      */
-      
-      render_reel()
-    //}
-    
+    render_reel()
+    // Copy back buffer to main canvas
+    const sW = mainBackBuffer.width
+    const sH = mainBackBuffer.height
+    const dW = can.width
+    const dH = (sH * dW) / sW
+
+    ctx.drawImage(
+      mainBackBuffer,
+      0, 0,
+      sW, sH,
+      0, 0,
+      dW, dH
+    )
+
     requestTime = time
     if (fps > maxFps) maxFps = fps
     window.requestAnimationFrame((timeRes) => mainLoop(timeRes))
@@ -402,8 +418,8 @@
     onStop = _onStopAll
     for (var i=0; i<reel_count; i++) {
       start_slowing[i] = false
-      stop_index =  spinResult[0][i] * symbol_size
-      stopping_position[i] = stop_index + 9 * symbol_size
+      stop_index =  spinResult[0][i] * slotSize
+      stopping_position[i] = stop_index + 9 * slotSize
     }
     game_state = STATE_SPINDOWN
   }
@@ -506,7 +522,18 @@
     const buffer = createBuffer(bufferWidth, bufferHeight)
 
     const bCtx = buffer.getContext('2d')
-
+    
+    for (let reelIndex = 0; reelIndex < reel_count; reelIndex++) {
+      bCtx.drawImage(
+        assets_backbuffers.reel_bg,
+        0, 0,
+        assets_backbuffers.reel_bg.width,
+        assets_backbuffers.reel_bg.height,
+        reelIndex * slotSize, 0,
+        slotSize, bufferHeight
+      )
+    }
+    /*
     bCtx.drawImage(
       assets_backbuffers.reels_bg,
       0,
@@ -516,12 +543,13 @@
       0, 0,
       bufferWidth, bufferHeight
     )
+    */
     bgBuffer = buffer
   }
   
   const prepareReel = () => {
-    const bufferWidth = symbol_size
-    const bufferHeight = symbol_size * 9 * 2
+    const bufferWidth = slotSize
+    const bufferHeight = slotSize * 9 * 2
     const buffer = createBuffer(bufferWidth, bufferHeight)
 
     const bCtx = buffer.getContext('2d')
@@ -532,11 +560,11 @@
         0, 0,
         assets_backbuffers[`symbol_${symbolIndex}`].width,
         assets_backbuffers[`symbol_${symbolIndex}`].height,
-        0, symbol_size * symbolIndex,
-        symbol_size, symbol_size
+        0, slotSize * symbolIndex,
+        slotSize, slotSize
       );
     }
-    bCtx.drawImage(buffer, 0, symbol_size * 9)
+    bCtx.drawImage(buffer, 0, slotSize * 9)
     reelBuffer = buffer
   }
 
@@ -565,6 +593,7 @@
 
     preloadAssets(() => {
       if (assetsIsLoaded()) {
+        prepareMainBackBuffer()
         prepareBg()
         prepareReel()
         prepareWinAnimation()
@@ -586,6 +615,22 @@
       return _isInited
     },
     markWinSlots,
+    updateAssets: (ownAssets) => {
+      console.log('>>> updateAssets', ownAssets)
+      assets.images = {
+        ...assets.images,
+        ...ownAssets.images,
+      }
+      
+      preloadAssets(() => {
+        if (assetsIsLoaded()) {
+          prepareMainBackBuffer()
+          prepareBg()
+          prepareReel()
+          prepareWinAnimation()
+        }
+      })
+    },
     setPreviewWinLines: (lineCount) => {
       previewWinLine = lineCount
     },
