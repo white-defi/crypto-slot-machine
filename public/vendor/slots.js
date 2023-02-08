@@ -95,7 +95,7 @@
 
   let reel_position = [0 * slotSize, 1 * slotSize, 6 * slotSize, 8 * slotSize, 5 * slotSize]
   
-  const max_reel_speed = 32;
+  const max_reel_speed = 128;
   const spinup_acceleration = 1;
   const spindown_acceleration = 0.1;
   const minSpinSpeed = 10;
