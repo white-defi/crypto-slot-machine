@@ -21,6 +21,7 @@ import sha256 from 'js-sha256'
 import BuyTokensModal from "../components/BuyTokensModal"
 import fetchUserSlotsInfo from "../helpers/fetchUserSlotsInfo"
 import fetchSlotsMachine from "../helpers/fetchSlotsMachine"
+import fetchTokenBalance from "../helpers/fetchTokenBalance"
 
 
 import DesignNumberInput from "../components/DesignNumberInput"
@@ -140,6 +141,17 @@ const Slots: NextPage = (props) => {
       })
     }
   }, [ chainId, slotsContractAddress ])
+
+  const [ isTokenBankERCFetched, setIsTokenBankERCFetched ] = useState(false)
+  
+  useEffect(() => {
+    if (chainId && slotsContractAddress && bankTokenInfo && bankTokenInfo.symbol && !isTokenBankERCFetched) {
+      fetchTokenBalance(slotsContractAddress, bankTokenInfo.address, chainId).then((_balance) => {
+        setTokensBankInERC(parseFloat(_balance.normalized))
+        setIsTokenBankERCFetched(true)
+      })
+    }
+  }, [ chainId, slotsContractAddress, bankTokenInfo ])
 
   useEffect(() => {
     if (activeWeb3 && address && chainId && slotsContractAddress) {
@@ -633,8 +645,16 @@ const Slots: NextPage = (props) => {
               font-size: 11pt;
               padding-bottom: 10px;
             }
+            .slotMachine .showWinCombinations {
+              width: auto;
+              padding-left: 20px;
+              padding-right: 20px;
+            }
             .slotMachine .buttonsHolder .spinButton {
               margin-top: 10px;
+              width: auto;
+              padding-left: 20px;
+              padding-right: 20px;
             }
             @media screen and (max-width: 460px) {
               .slotMachine .buttonsHolder {
@@ -642,6 +662,9 @@ const Slots: NextPage = (props) => {
               }
               .slotMachine .buttonsHolder .spinButton {
                 order: 2;
+                width: 100%;
+              }
+              .slotMachine .showWinCombinations {
                 width: 100%;
               }
             }
@@ -699,7 +722,7 @@ const Slots: NextPage = (props) => {
             </div>
           </div>
           <div>
-            <button className={`${styles.mainButton}`}  onClick={doShowWinCombinations}>Show Win combinations</button>
+            <button className={`${styles.mainButton} showWinCombinations`} onClick={doShowWinCombinations}>Show Win combinations</button>
           </div>
           <div>
             <button onClick={doTest}>Test</button>

@@ -9,10 +9,14 @@ import callSlotsMethod from "../../helpers/callSlotsMethod"
 import fetchSlotsMachine from "../../helpers/fetchSlotsMachine"
 import Script from 'next/script'
 
+import SwitchNetworkAndCall from "../SwitchNetworkAndCall"
+
 import contractData from "../../contracts/source/artifacts/SlotMachine.json"
 import { getRandSalt } from "../../helpers/getRandSalt"
 import { fromWei, toWei } from "../../helpers/wei"
 import fetchTokenInfo from "../../helpers/fetchTokenInfo"
+import { switchOrAddChain } from "../../helpers/setupWeb3"
+import { getStorageInfo } from "../../storage/"
 
 export default function TabMain(options) {
   const {
@@ -28,6 +32,8 @@ export default function TabMain(options) {
     slotsContractAddress,
     storageDesign,
   } = options
+
+  const { storageChainId } = getStorageInfo()
 
   const [ newChainId, setNewChainId ] = useState(storageData?.chainId)
   const [ newSlotsAddress, setNewSlotsAddress ] = useState(storageData?.slotsContractAddress)
@@ -156,42 +162,56 @@ export default function TabMain(options) {
   const [ isSaveSlotsChanges, setIsSaveSlotsChanges ] = useState(false)
   
   const doSaveSlotsChanges = () => {
-    openConfirmWindow({
-      title: `Saving changes to SlotsMachine contract`,
-      message: `Save changes to SlotMachine contract?`,
-      onConfirm: () => {
-        setIsSaveSlotsChanges(true)
-        addNotify(`Saving changes. Confirm transaction`)
-        callSlotsMethod({
-          activeWeb3,
-          contractAddress: newSlotsAddress,
-          method: 'saveSettings',
-          args: [
-            toWei(newTokenPrice, currencyTokenInfo.decimals),
-            newMaxBet,
-            newMaxLines,
-            newWildSlot,
-            newWinCombinations
-          ],
-          onTrx: (txHash) => {
-            console.log('>> onTrx', txHash)
-            addNotify(`Saving changes TX ${txHash}`, `success`)
-          },
-          onSuccess: (receipt) => {
-            console.log('>> onSuccess', receipt)
-          },
-          onError: (err) => {
-            console.log('>> onError', err)
-            setIsSaveSlotsChanges(false)
-            addNotify(`Fail save changes. ${err.message ? err.message : ''}`, `error`)
-          },
-          onFinally: (answer) => {
-            setIsSaveSlotsChanges(false)
-            addNotify(`Changes saved`, `success`)
-          }
-        })
-      }
-    })
+
+    const _do = () => {
+      openConfirmWindow({
+        title: `Saving changes to SlotsMachine contract`,
+        message: `Save changes to SlotMachine contract?`,
+        onConfirm: () => {
+          setIsSaveSlotsChanges(true)
+          addNotify(`Saving changes. Confirm transaction`)
+          callSlotsMethod({
+            activeWeb3,
+            contractAddress: newSlotsAddress,
+            method: 'saveSettings',
+            args: [
+              toWei(newTokenPrice, currencyTokenInfo.decimals),
+              newMaxBet,
+              newMaxLines,
+              newWildSlot,
+              newWinCombinations
+            ],
+            onTrx: (txHash) => {
+              console.log('>> onTrx', txHash)
+              addNotify(`Saving changes TX ${txHash}`, `success`)
+            },
+            onSuccess: (receipt) => {
+              console.log('>> onSuccess', receipt)
+            },
+            onError: (err) => {
+              console.log('>> onError', err)
+              setIsSaveSlotsChanges(false)
+              addNotify(`Fail save changes. ${err.message ? err.message : ''}`, `error`)
+            },
+            onFinally: (answer) => {
+              setIsSaveSlotsChanges(false)
+              addNotify(`Changes saved`, `success`)
+            }
+          })
+        }
+      })
+    }
+    
+    const { activeChainId } = getActiveChain()
+    if (`${newChainId}` !== `${activeChainId}`) {
+      switchOrAddChain(newChainId).then((isOk) => {
+        if (isOk) _do()
+      })
+    } else {
+      _do()
+    }
+    console.log('>>> need chainId', newChainId)
+    console.log('>>> active chain', getActiveChain())
   }
 
   const setWinCombination = (symbolIndex, matchCount, winReward) => {
@@ -335,12 +355,12 @@ export default function TabMain(options) {
                         </strong>
                       </div>
                       <div className={styles.actionsRow}>
-                        <button disabled={isFlushRandom} onClick={doFlushRandom}>
+                        <SwitchNetworkAndCall chainId={newChainId} disabled={isFlushRandom} action={`Flush random generator`} onClick={doFlushRandom}>
                           {isFlushRandom
                             ? `Flushing random generator...`
                             : `Flush random generator`
                           }
-                        </button>
+                        </SwitchNetworkAndCall>
                       </div>
 
                     </div>
@@ -422,12 +442,12 @@ export default function TabMain(options) {
                             )
                           })}
                           <div className={styles.actionsRow}>
-                            <button disabled={isSaveImages} onClick={doSaveImages}>
+                            <SwitchNetworkAndCall chainId={storageChainId} disabled={isSaveImages} action={`save design changes`} onClick={doSaveImages}>
                               {isSaveImages
                                 ? `Saving...`
                                 : `Save design changes`
                               }
-                            </button>
+                            </SwitchNetworkAndCall>
                           </div>
                         </div>
                         
@@ -490,12 +510,12 @@ export default function TabMain(options) {
                           </div>
                         </div>
                         <div className={styles.actionsRow}>
-                          <button disabled={isSaveSlotsChanges} onClick={doSaveSlotsChanges}>
+                          <SwitchNetworkAndCall chainId={newChainId} disabled={isSaveSlotsChanges} action={`save Changes`} onClick={doSaveSlotsChanges}>
                             {isSaveSlotsChanges
                               ? `Saving changes...`
                               : `Save changes`
                             }
-                          </button>
+                          </SwitchNetworkAndCall>
                         </div>
                       </div>
                     </div>
@@ -609,12 +629,12 @@ export default function TabMain(options) {
                         </tbody>
                       </table>
                       <div className={styles.actionsRow}>
-                        <button disabled={isSaveSlotsChanges} onClick={doSaveSlotsChanges}>
+                        <SwitchNetworkAndCall chainId={newChainId} disabled={isSaveSlotsChanges} action={`save Win combinations`} onClick={doSaveSlotsChanges}>
                           {isSaveSlotsChanges
                             ? `Saving win combinations...`
                             : `Save Win combinations`
                           }
-                        </button>
+                        </SwitchNetworkAndCall>
                       </div>
                     </div>
                   )
