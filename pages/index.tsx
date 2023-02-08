@@ -18,6 +18,10 @@ import callSlotsMethod from "../helpers/callSlotsMethod"
 import sha256 from 'js-sha256'
 import BuyTokensModal from "../components/BuyTokensModal"
 import fetchUserSlotsInfo from "../helpers/fetchUserSlotsInfo"
+import fetchSlotsMachine from "../helpers/fetchSlotsMachine"
+
+
+import DesignNumberInput from "../components/DesignNumberInput"
 
 const debugLog = (msg) => { console.log(msg) }
 
@@ -40,6 +44,7 @@ const Slots: NextPage = (props) => {
     getDesign,
     openConfirmWindow,
   } = props
+  
   const [ chainId, setChainId ] = useState(storageData?.chainId)
   const [ slotsContractAddress, setSlotsContractAddress ] = useState(storageData?.slotsContractAddress)
   const [ bankTokenInfo, setBankTokenInfo ] = useState(storageData?.bankTokenInfo)
@@ -51,7 +56,21 @@ const Slots: NextPage = (props) => {
   const [address, setAddress] = useState(false)
 
   const [slotsContract, setSlotsContract] = useState(false)
+  const [slotMachine, setSlotMachine] = useState(false) // Render engine
+  
+  const [ slotMultipler, setSlotMultipler ] = useState(false)
 
+  const [ tokensBank, setTokensBank ] = useState(0)
+  const [ tokensBankInERC, setTokensBankInERC ] = useState(0)
+  const [ userTokens, setUserTokens ] = useState(0)
+  const [ userTokensAdd, setUserTokensAdd ] = useState(0)
+  const [ currentLineWin, setCurrentLineWin ] = useState(0)
+  const [ currentSlots, setCurrentSlots ] = useState([0, 0, 0, 0, 0])
+  const [ winAmountCounter, setWinAmountCounter ] = useState(0)
+  const [ winLines, setWinLines ] = useState([])
+  const [ winLinesAmount, setWinLinesAmount ] = useState([])
+  const [ winLinesSwitchCounter, setWinLinesSwitchCounter ] = useState(0)
+  
   const processError = (error, error_namespace) => {
     let metamaskError = false
     try {
@@ -76,6 +95,48 @@ const Slots: NextPage = (props) => {
     }
   }
 
+  const updateUserSlotsState = () => {
+    fetchUserSlotsInfo({
+      activeWeb3,
+      activeWallet: address,
+      address: slotsContractAddress,
+      chainId,
+    }).then((answer) => {
+      setUserTokens(Number(answer.tokensAmount))
+      setTokenPriceWei(answer.tokenPrice)
+      setTokensBank(answer.tokensBank)
+    }).catch((err) => {
+      console.log('>>> err', err)
+    })
+  }
+
+  const [betAmount, setBetAmount] = useState(1)
+  const [lineCount, setLineCount] = useState(1)
+  const [maxBet, setMaxBet] = useState(1)
+  const [maxLines, setMaxLines] = useState(1)
+  
+  useEffect(() => {
+    if (chainId && slotsContractAddress) {
+      fetchSlotsMachine({
+        chainId,
+        address: slotsContractAddress
+      }).then((answer) => {
+        console.log('>>> Slot machine statlus', answer)
+        setMaxBet(answer.maxBet)
+        setMaxLines(answer.maxLines)
+        prepareWinCombinations(answer.winCombinations)
+      }).catch((err) => {
+        console.log('Fail fetch slot machine status', err)
+      })
+    }
+  }, [ chainId, slotsContractAddress ])
+
+  useEffect(() => {
+    if (activeWeb3 && address && chainId && slotsContractAddress) {
+      updateUserSlotsState()
+    }
+  }, [activeWeb3, address, chainId, slotsContractAddress])
+  
   const initOnWeb3Ready = async () => {
     if (activeWeb3 && (`${activeChainId}` == `${chainId}`)) {
       activeWeb3.eth.getAccounts().then((accounts) => {
@@ -83,18 +144,7 @@ const Slots: NextPage = (props) => {
         const _contact = new activeWeb3.eth.Contract(slotsContractData.abi, slotsContractAddress)
         setSlotsContract(_contact)
         
-        fetchUserSlotsInfo({
-          activeWeb3,
-          activeWallet: accounts[0],
-          address: slotsContractAddress,
-          chainId
-        }).then((answer) => {
-          console.log('>>> answe', answer)
-          setUserTokens(Number(answer.tokensAmount))
-          setTokenPriceWei(answer.tokenPrice)
-        }).catch((err) => {
-          console.log('>>> err', err)
-        })
+        
       }).catch((err) => {
         console.log('>>> initOnWeb3Ready', err)
         processError(err)
@@ -117,30 +167,34 @@ const Slots: NextPage = (props) => {
     }
   }, [storageData])
 
-  const [slotMachine, setSlotMachine] = useState(false)
-  
+
+  const prepareWinCombinations = (multiplers) => {
+    const winCombination = multiplers.map((data, key) => {
+      return {
+        id: key,
+        data: [...data].reverse()
+      }
+    }).sort((a,b) => {
+      return a.data[0] > b.data[0] ? -1 : 1
+    })
+    console.log('>>> setSlotMultipler', winCombination)
+    setSlotMultipler((prev) => {
+      return winCombination
+    })
+  }
+  /* INIT RENDER ENGINE */
   useEffect(() => {
     if (activeWeb3 && isMetamaskConnected) {
       const waitCanvas = setInterval(() => {
-        console.log('>>> waitCanvas')
         const canvas = document.getElementById(`renderCanvas`)
         if (canvas && window.SLOT_MACHINE) {
           setSlotMachine(window.SLOT_MACHINE)
+          console.log('>>> setSlot machine')
           window.SLOT_MACHINE.init({
             canvasId: 'renderCanvas',
+            slotSize: 200,
           })
-          const multiplers = window.SLOT_MACHINE.getMultiplers().map((data, key) => {
-            return {
-              id: key,
-              data: data.reverse()
-            }
-          }).sort((a,b) => {
-            return a.data[0] > b.data[0] ? -1 : 1
-          })
-          console.log('>>> multiplers', multiplers)
-          setSlotMultipler((prev) => {
-            return multiplers
-          })
+          //prepareWinCombinations(window.SLOT_MACHINE.getMultiplers())
           clearInterval(waitCanvas)
         }
       }, 100)
@@ -171,20 +225,12 @@ const Slots: NextPage = (props) => {
     '#55f7d9e0',
   ]
 
-  const [ slotMultipler, setSlotMultipler ] = useState(false)
 
-  const [ userTokens, setUserTokens ] = useState(0)
-  const [ userTokensAdd, setUserTokensAdd ] = useState(0)
-  const [ currentLineWin, setCurrentLineWin ] = useState(0)
-  const [ currentSlots, setCurrentSlots ] = useState([0, 0, 0, 0, 0])
-  const [ winAmountCounter, setWinAmountCounter ] = useState(0)
-  const [ winLines, setWinLines ] = useState([])
-  const [ winLinesAmount, setWinLinesAmount ] = useState([])
-  const [ winLinesSwitchCounter, setWinLinesSwitchCounter ] = useState(0)
   const winLinesSwitchDeplay = 2;
   
   const [ spinResult, setSpinResult ] = useState({})
-  
+
+/*
   useEffect(() => {
     const timer = setInterval(() => {
       if (userTokensAdd > 0) {
@@ -198,10 +244,12 @@ const Slots: NextPage = (props) => {
     }, 10)
     return () => { clearInterval(timer) }
   })
-
+*/
   useEffect(() => {
-    const timer = setInterval(() => {
+  /*
+    const timer = setTimeout(() => {
       if (slotMachine) {
+        console.log('>>> win line timer')
         if (winLinesSwitchCounter > 0) {
           setWinLinesSwitchCounter((prev) => {
             return prev - 1
@@ -220,43 +268,24 @@ const Slots: NextPage = (props) => {
             })
             setWinLinesSwitchCounter(winLinesSwitchDeplay)
           } else {
+            console.log('>>> do hide')
             setWinAmountCounter(0)
             slotMachine.hideActiveWinLine()
           }
         }
       }
     }, 1000)
-    return () => { clearInterval(timer) }
-  })
+    return () => { clearTimeout(timer) }
+    */
+    console.log(winLines)
+  }, [ winLines ])
   
   const doTest = () => {
-    console.log('>>> slotsContract', slotsContract)
-    slotsContract.methods.getMyBalance().call().then((_userBalance) => {
-      console.log('>>> balance', _userBalance)
-      //setUserTokens(_userBalance)
-    })
-  slotsContract.methods.getUserBalance(address).call().then((_userBalance) => {
-      console.log('>>> balance', _userBalance)
-      //setUserTokens(_userBalance)
-    })
-      slotsContract.methods.getBankInTokens().call().then((_userBalance) => {
-      console.log('>>> getBankInTokens', _userBalance)
-      //setUserTokens(_userBalance)
-    })
-    slotsContract.methods.getMultiplers().call().then((_userBalance) => {
-      console.log('>>> getMultiplers', _userBalance)
-      //setUserTokens(_userBalance)
-    })
-    slotsContract.methods.getWinLines().call().then((_userBalance) => {
-      console.log('>>> getWinLines', _userBalance)
-      //setUserTokens(_userBalance)
-    })
+    
   }
   
   useEffect(() => {
     if (slotMachine && slotMachine.isInited() && spinResult && spinResult.spinWinLines) {
-      console.log('>>> spinResult',spinResult)
-      
       const newWinLines = []
       const newWinLinesAmount = spinResult.spinWinLines.filter((amount, line) => {
         if (amount > 0) {
@@ -283,7 +312,7 @@ const Slots: NextPage = (props) => {
       method: 'doSpin',
       args: [
         betAmount,
-        lineCount - 1,
+        lineCount,
         `0x${calcedHash}`
       ],
       onTrx: (txHash) => {
@@ -293,18 +322,15 @@ const Slots: NextPage = (props) => {
         setUserTokens((prev) => {
           return prev - (betAmount * lineCount)
         })
-        //addNotify(`NFT mint TX ${txHash}`, `success`)
+        addNotify(`Spinning... TX ${txHash}`, `success`)
       },
       onSuccess: (receipt) => {
-        console.log('>> onSuccess', receipt)
-        //addNotify(`NFT mint transaction broadcasted`, `success`)
+        
       },
       onError: (err) => {
-        console.log('>> onError', err)
-        //addNotify(`Fail mint NFT. ${err.message ? err.message : ''}`, `error`)
+        addNotify(`Fail do spin. ${err.message ? err.message : ''}`, `error`)
       },
       onFinally: (answer) => {
-        
         console.log('>> onFinally', answer)
         const spinData = answer.events.ReelsSpinned.returnValues
         const {
@@ -324,13 +350,14 @@ const Slots: NextPage = (props) => {
         ]
         console.log(spinData)
         slotMachine.stop(resultSlots, () => {
-          console.log('>>> stoped', spinWinLines)
           setUserTokens((prev) => {
             return prev + Number(spinData.winAmount)
           })
           setSpinResult(spinData)
         })
       }
+    }).catch((err) => {
+      addNotify(`Fail do spin. ${err.message ? err.message : ''}`, `error`)
     })
     
   }
@@ -358,54 +385,131 @@ const Slots: NextPage = (props) => {
     `_MYAPP/vendor/images/symbols/seven.png`,
     `_MYAPP/vendor/images/symbols/water-melon.png`,
   ]
+
+  const [ isWinCombinationsOpened, setIsWinCombinationsOpened ] = useState(false)
+  const doShowWinCombinations = () => {
+    setIsWinCombinationsOpened(true)
+  }
+  const doHideWinCombinations = () => {
+    setIsWinCombinationsOpened(false)
+  }
   const renderSlotMultipler = () => {
-    return null
+    if (!isWinCombinationsOpened) return null
     let iKey = 0
     return (
-      <div className="winTable">
+      <>
         <style jsx>
-        {`
-          .winTable IMG {
-            display: block;
-            width: 32px;
-          }
-          .winTable .winHolder {
-            display: flex;
-            border-bottom: 1px solid #FFF;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: nowrap;
-          }
-          .winTable .symbolsHolder {
-            display: flex;
-          }
-        `}
+          {`
+            .winTableHolder {
+              position: fixed;
+              left: 0px;
+              top: 0px;
+              bottom: 0px;
+              right: 0px;
+              overflow: auto;
+              z-index: 20000;
+              background: #0000008c;
+            }
+            .winTable {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              align-items: center;
+              max-width: 640px;
+              width: auto;
+              background: #012442d1;
+              padding: 10px;
+              border: 2px solid #FFF;
+              margin: 0 auto;
+            }
+            .winTable>DIV {
+              background: #13487e;
+              padding: 10px;
+              margin: 5px;
+              border: 1px solid #FFF;
+              box-shadow: 0px 0px 2px 2px rgb(0 0 0 / 75%);
+            }
+            .winTable IMG {
+              display: block;
+              width: 32px;
+            }
+            .winTable .winHolder STRONG {
+              display: block;
+              min-width: 100px;
+              text-align: right;
+            }
+            .winTable .winHolder {
+              display: flex;
+              border-bottom: 1px solid #FFF;
+              justify-content: space-between;
+              align-items: center;
+              flex-wrap: nowrap;
+            }
+            .winTable .symbolsHolder {
+              display: flex;
+            }
+            .winTable H2 {
+              display: block;
+              width: 100%;
+              margin: 10px;
+              font-size: 14pt;
+              text-shadow: 1px 1px 5px black, -1px -1px 5px black, 1px -1px 5px black, -1px 1px 5px black;
+            }
+            .winTable .closeHolder {
+              width: 100%;
+              display: block;
+              padding-top: 10px;
+            }
+            .winTable .closeHolder BUTTON {
+              border-radius: 5px;
+              font-family: Arial;
+              color: #fff;
+              font-size: 20px;
+              background: #031736;
+              padding: 10px 20px 10px 20px;
+              border: solid #fff 1px;
+              text-decoration: none;
+              box-shadow: 0px 0px 2px 2px #00000094;
+              cursor: pointer;
+            }
+            .winTable .closeHolder BUTTON:hover {
+              background: #011524;
+              text-decoration: none;
+            }
+          `}
         </style>
-        {slotMultipler.map((mData, kk) => {
-          const notZeroCount = mData.data.map((m) => { return (m>0) ? true : false }).filter((m) => m)
-          iKey ++
-          return (
-            <div key={iKey}>
-              {notZeroCount.map((m, mK) => {
-                return (
-                  <div key={mK} className="winHolder">
-                    <div className="symbolsHolder">
-                      {mData.data.map((amount, key) => {
-                        if (mK > key) return null
-                        return (
-                          <img key={key} src={symbols[mData.id]} />
-                        )
-                      })}
-                    </div>
-                    <strong>{mData.data[mK]*betAmount}</strong>
-                  </div>
-                )
-              })}
-            </div>
-          )
-            
-        })}
-      </div>
+        <div className="winTableHolder">
+          <div className="winTable">
+            <h2>Win Combinations</h2>
+            {slotMultipler.map((mData, kk) => {
+              const notZeroCount = mData.data.map((m) => { return (m>0) ? true : false }).filter((m) => m)
+              iKey ++
+              return (
+                <div key={iKey}>
+                  {notZeroCount.map((m, mK) => {
+                    return (
+                      <div key={mK} className="winHolder">
+                        <div className="symbolsHolder">
+                          {mData.data.map((amount, key) => {
+                            if (mK > key) return null
+                            return (
+                              <img key={key} src={symbols[mData.id]} />
+                            )
+                          })}
+                        </div>
+                        <strong>{mData.data[mK]*betAmount}</strong>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+            <span className="closeHolder">
+              <button onClick={doHideWinCombinations}>Close</button>
+            </span>
+          </div>
+        </div>
+      </>
     )
   }
   const connectWithMetamask = async () => {
@@ -425,15 +529,15 @@ const Slots: NextPage = (props) => {
     })
   }
 
-  const [betAmount, setBetAmount] = useState(1)
-  const [lineCount, setLineCount] = useState(1)
+
   useEffect(() => {
     console.log('>>> lineCount', lineCount, slotMachine, slotMachine ? slotMachine.isInited() : false)
     if (slotMachine && slotMachine.isInited()) {
       slotMachine.render_reel()
+      console.log('>>> lineCount', lineCount)
       for (let line = 0; line < lineCount; line++ ) {
         console.log('>>> render win line', line)
-        slotMachine.setPreviewWinLines(line)
+        slotMachine.setPreviewWinLines(line + 1)
       }
     }
   }, [lineCount, slotMachine])
@@ -441,6 +545,8 @@ const Slots: NextPage = (props) => {
   const [ isBuyTokens, setIsBuyTokens ] = useState(false)
   const buyTokens = () => {
     setIsBuyTokens(true)
+  }
+  const withdrawTokens = () => {
   }
   const mintChainInfo = CHAIN_INFO(chainId)
   return (
@@ -467,18 +573,61 @@ const Slots: NextPage = (props) => {
           <style jsx>
           {`
             .slotMachine {
+              width: 100%;
+            }
+            .slotMachine CANVAS {
+              width: 100%;
+              max-width: 640px;
+              margin: 0 auto;
+              border: 5px solid #02213a;
+              box-shadow: 1px 1px 5px 5px #0000007a;
+              border-radius: 10px;
             }
             .slotMachine .balanceHolder {
               display: flex;
-              width: 320px;
+              max-width: 640px;
+              margin: 0 auto;
+              justify-content: space-between;
+              font-size: 11pt;
+              padding-top: 5px;
+              padding-bottom: 5px;
+              border-bottom: 1px solid #FFF;
+              margin-bottom: 10px;
+              margin-top: 10px;
+              border-top: 1px solid #FFF;
+            }
+            .slotMachine .balanceButtonsHolder {
+              display: flex;
+              max-width: 640px;
+              margin: 0 auto;
               justify-content: space-between;
               font-size: 11pt;
             }
+            .slotMachine .balanceButtonsHolder DIV {
+              width: 40%;
+            }
+            .slotMachine .balanceButtonsHolder DIV BUTTON {
+              width: 100%;
+            }
             .slotMachine .buttonsHolder {
               display: flex;
-              width: 320px;
-              justify-content: space-between;
+              max-width: 640px;
+              margin: 0 auto;
+              justify-content: space-evenly;
               font-size: 11pt;
+              padding-bottom: 10px;
+            }
+            .slotMachine .buttonsHolder .spinButton {
+              margin-top: 10px;
+            }
+            @media screen and (max-width: 460px) {
+              .slotMachine .buttonsHolder {
+                flex-wrap: wrap;
+              }
+              .slotMachine .buttonsHolder .spinButton {
+                order: 2;
+                width: 100%;
+              }
             }
             .slotMachine .buttonsHolder strong {
               font-size: 10pt;
@@ -491,10 +640,19 @@ const Slots: NextPage = (props) => {
             }
           `}
           </style>
-          <div>Slot machine</div>
-          <div className="balanceHolder">
+          <div className="bankAmount">
+            {bankTokenInfo && bankTokenInfo.symbol && (
+              <>
+                Tokens in bank: {tokensBank} ({tokensBankInERC} {bankTokenInfo.symbol})
+              </>
+            )}
+          </div>
+          <div className="balanceButtonsHolder">
             <div>
-              <button onClick={buyTokens}>Add tokens</button>
+              <button className={`${styles.mainButton} primaryButton`} onClick={buyTokens}>Add tokens</button>
+            </div>
+            <div>
+              <button className={`${styles.mainButton} primaryButton`} onClick={withdrawTokens}>Withdraw</button>
             </div>
           </div>
           <div className="balanceHolder">
@@ -514,23 +672,18 @@ const Slots: NextPage = (props) => {
           <div className="buttonsHolder">
             <div>
               <strong>Lines</strong>
-              <input type="number" min="1" max="20" value={lineCount} onChange={(e) => { setLineCount(e.target.value) }} />
+              <DesignNumberInput min="1" max={maxLines} value={lineCount} onChange={(v) => { setLineCount(v) }} />
             </div>
-            <div>
-              <strong>Bet</strong>
-              <input type="number" min="1" max="100" value={betAmount} onChange={(e) => { setBetAmount(e.target.value) }} />
-            </div>
-          </div>
-          <div>
-            <button className={`${styles.mainButton} primaryButton`} onClick={doSpin}>
+            <button className={`${styles.mainButton} primaryButton spinButton`} onClick={doSpin}>
               {`Spin (${lineCount *  betAmount} Tokens)`}
             </button>
+            <div>
+              <strong>Bet</strong>
+              <DesignNumberInput min="1" max={maxBet} value={betAmount} onChange={(v) => { setBetAmount(v) }} />
+            </div>
           </div>
           <div>
-            <button onClick={doTest}>Test</button>
-          </div>
-          <div>
-            <button onClick={doStop}>Stop</button>
+            <button className={`${styles.mainButton}`}  onClick={doShowWinCombinations}>Show Win combinations</button>
           </div>
           {slotMultipler !== false && (
             <>
@@ -550,6 +703,7 @@ const Slots: NextPage = (props) => {
               onClose: () => { setIsBuyTokens(false) },
               onBuy: () => {
                 setIsBuyTokens(false)
+                updateUserSlotsState()
               }
             }} />
           )}

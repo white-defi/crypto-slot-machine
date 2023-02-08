@@ -13,16 +13,17 @@ import { callMulticall } from './callMulticall'
 
 const fetchSlotsMachine = (options) => {
   const {
-    activeWeb3, address, chainId
+    address, chainId
   } = options
 
   return new Promise((resolve, reject) => {
     const chainInfo = CHAIN_INFO(chainId)
     if (chainInfo && chainInfo.rpcUrls) {
       try {
-        const contract = new activeWeb3.eth.Contract(contractData.abi, address)
+        const web3 = new Web3(chainInfo.rpcUrls[0])
+        const contract = new web3.eth.Contract(contractData.abi, address)
         
-        const multicall = new activeWeb3.eth.Contract(MulticallAbi, MULTICALL_CONTRACTS[chainId])
+        const multicall = new web3.eth.Contract(MulticallAbi, MULTICALL_CONTRACTS[chainId])
         const abiI = new AbiInterface(contractData.abi)
         callMulticall({
           multicall,

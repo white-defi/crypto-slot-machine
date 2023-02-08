@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.7+commit.e28d00a7"
+		"version": "0.8.17+commit.8df45f5f"
 	},
 	"language": "Solidity",
 	"output": {
@@ -666,7 +666,7 @@
 		},
 		"optimizer": {
 			"enabled": true,
-			"runs": 200
+			"runs": 99999
 		},
 		"remappings": []
 	},
@@ -736,11 +736,11 @@
 			]
 		},
 		"source/SlotMachine.sol": {
-			"keccak256": "0xd254c4cf01fec219b41a28285cc0240bed3de1c1e3471e6dfdf82e5a1cdd9dd2",
+			"keccak256": "0xc5a296428466a3e910ccd7c9fb8710f0bb864df161b715c8859d57d2f6c8517f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://256cfd80b11611c370779a975aa056cf3d05ea3f209e45643596d8e1829846cd",
-				"dweb:/ipfs/QmaGHccSA4NxMuwjZr6wht2KgEaMAusf7zQNvPJhyCd24V"
+				"bzz-raw://cfd149ef42f40263b1f9c9b23cbf7b207fd61b05ea3295b76a61ac18254fddaf",
+				"dweb:/ipfs/QmRPcKnCS7HhkUTjLAxLLaAPD9FR4P6AhePCu6C8H14at1"
 			]
 		}
 	},

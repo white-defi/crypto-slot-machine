@@ -1,11 +1,12 @@
 (() => {
-
   // html elements
   let can     // canvas
   let ctx     // context
 
   const debugBuffers = false
 
+  let isFixedCanvas = false
+  
   let assets = {
     images: {
       symbol_0: `_MYAPP/vendor/images/symbols/apple.png`,
@@ -74,26 +75,41 @@
   // config
   const reel_area_left = 0
   const reel_area_top = 0
-  const slotSize = 64
+  let slotSize = 64
   const reel_count = 5
   const row_count = 3;
-  const reel_area_width = slotSize * reel_count
-  const reel_area_height = slotSize * row_count
+  let reel_area_width = slotSize * reel_count
+  let reel_area_height = slotSize * row_count
   
   const reel_positions = 27
   
   const symbol_count = 9
-  const reel_pixel_length = 9 * 4 * slotSize
 
-  const reelHeight = reel_positions * slotSize
-  const reelScrollHeight = 9 * slotSize * 2
-  const reelStopMaxOffset = reel_positions * slotSize * 3;
+  let reel_pixel_length = 9 * 4 * slotSize
+
+  let reelHeight = reel_positions * slotSize
+  let reelScrollHeight = 9 * slotSize * 2
+  let reelStopMaxOffset = reel_positions * slotSize * 3;
   
-  const stopping_distance = reel_positions * slotSize;
+  let stopping_distance = reel_positions * slotSize;
+
+  let reel_position = [0 * slotSize, 1 * slotSize, 6 * slotSize, 8 * slotSize, 5 * slotSize]
+  
   const max_reel_speed = 32;
   const spinup_acceleration = 1;
   const spindown_acceleration = 0.1;
   const minSpinSpeed = 10;
+
+  const recalcRenderValues = () => {
+    reel_area_width = slotSize * reel_count
+    reel_area_height = slotSize * row_count
+    reel_pixel_length = 9 * 4 * slotSize
+    reelHeight = reel_positions * slotSize
+    reelScrollHeight = 9 * slotSize * 2
+    reelStopMaxOffset = reel_positions * slotSize * 3;
+    stopping_distance = reel_positions * slotSize;
+    reel_position = [0 * slotSize, 1 * slotSize, 6 * slotSize, 8 * slotSize, 5 * slotSize]
+  }
 
   const reelsTemplate = [0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8]
   const reels = [ reelsTemplate, reelsTemplate, reelsTemplate, reelsTemplate, reelsTemplate ]
@@ -156,7 +172,8 @@
       /* 7 seven  */ [ 0, 0, 20,   200,   1000],
       /* 8 wmelon */ [ 0, 0, 2,    5,     15]
   ];
-  const reel_position = [0 * slotSize, 1 * slotSize, 6 * slotSize, 8 * slotSize, 5 * slotSize]
+
+  
   const stopping_position = [0, 0, 0, 0, 0]
   const start_slowing = [false, false, false, false, false]
   const reel_speed = [0, 0, 0, 0, 0]
@@ -569,14 +586,28 @@
   }
 
   let _isInited = false
+  const resizeCanvas = () => {
+    const cW = can.width
+    const bW = mainBackBuffer.width
+    const bH = mainBackBuffer.height
+    can.height = (bH * cW) / bW
+  }
   const init = (options) => {
     const {
       canvasId,
-      ownAssets
+      ownAssets,
+      slotSize: _slotSize,
+      isFixedCanvas: _isFixedCanvas,  // Размер канваса регулирует фронт (ширину - высота автоматом)
     } = {
       ownAssets: { images: [], sounds: [] },
+      slotSize: 64,
+      isFixedCanvas: true,
       ...options,
     }
+
+    isFixedCanvas = _isFixedCanvas
+    slotSize = _slotSize
+
     assets.images = {
       ...assets.images,
       ...ownAssets.images,
@@ -585,10 +616,11 @@
       ...assets.sounds,
       ...ownAssets.sounds,
     }
+
+    recalcRenderValues()
+    
     can = document.getElementById(canvasId)
-    can.width = reel_area_width
-    can.height = reel_area_height
-    ctx = can.getContext("2d")
+    
 
 
     preloadAssets(() => {
@@ -597,7 +629,13 @@
         prepareBg()
         prepareReel()
         prepareWinAnimation()
-        //render_reel()
+        if (isFixedCanvas) {
+          resizeCanvas()
+        } else {
+          can.width = reel_area_width
+          can.height = reel_area_height
+        }
+        ctx = can.getContext("2d")
         _isInited = true
         mainLoop()
       }
@@ -609,12 +647,27 @@
     init,
     spin,
     stop,
+    resizeCanvas,
     render_winLine,
     render_reel,
     isInited: () => {
       return _isInited
     },
     markWinSlots,
+    setSlotSize: (newSlotSize) => {
+      slotSize = newSlotSize
+      recalcRenderValues()
+      if (isFixedCanvas) {
+        resizeCanvas()
+      } else {
+        can.width = reel_area_width
+        can.height = reel_area_height
+      }
+      prepareMainBackBuffer()
+      prepareBg()
+      prepareReel()
+      prepareWinAnimation()
+    },
     updateAssets: (ownAssets) => {
       console.log('>>> updateAssets', ownAssets)
       assets.images = {

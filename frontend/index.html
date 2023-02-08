@@ -39,6 +39,112 @@
     <script type="text/javascript">
       SLOT_MACHINE.init('slots')
     </script>
+    <script type="text/javascript">
+      const spinResult = [
+        [7, 4, 5, 8, 2],
+        [2, 0, 5, 0, 2],
+        [0, 6, 7, 1, 4]
+      ]
+      const _wildSlot = 1000
+      const winLines = [
+        [1, 1, 1, 1, 1],    // 0
+        [0, 0, 0, 0, 0],    // 1
+        [2, 2, 2, 2, 2],    // 2
 
+        [1, 1, 0, 1, 2],    // 3
+        [1, 1, 2, 1, 0],    // 4
+        [1, 0, 1, 2, 1],    // 5
+        [1, 0, 1, 2, 2],    // 6
+        [1, 0, 0, 1, 2],    // 7
+        [1, 2, 1, 0, 1],    // 8
+        [1, 2, 2, 1, 0],    // 9
+        [1, 2, 1, 0, 0],    // 10
+
+        [0, 1, 2, 1, 0],    // 11
+        [0, 1, 1, 1, 2],    // 12
+        [0, 0, 1, 2, 2],    // 13
+        [0, 0, 1, 2, 1],    // 14
+        [0, 0, 0, 1, 2],    // 15
+
+        [2, 1, 0, 1, 2],    // 16
+        [2, 1, 1, 1, 0],    // 17
+        [2, 2, 1, 0, 0],    // 18
+        [2, 2, 1, 0, 1]     // 19
+      ];
+
+      const slotMult = [
+      /*
+        [ 1, 1, 1, 1, 1],
+        [ 2, 2, 2, 2, 2],
+        [ 3, 3, 3, 3, 3],
+        [ 4, 4, 4, 4, 4],
+        [ 5, 5, 5, 5, 5],
+        [ 6, 6, 6, 6, 6],
+        [ 7, 7, 7, 7, 7],
+        [ 8, 8, 8, 8, 8],
+        [ 9, 9, 9, 9, 9],
+        */
+      
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+        [ 1, 2, 3, 4, 5],
+      
+      ]
+      function checkLine(
+        currentLine,
+        _spinResult
+      ) {
+          let matchCount = 0;
+
+          let startNotWildReel = 0;
+          let firstSlot;
+          
+          // Ищем первый не wild (bar) слот
+          for (let reelIndex = 0; reelIndex < 5; reelIndex++) {
+              if (_spinResult[winLines[currentLine][reelIndex]][reelIndex] != _wildSlot) {
+                  startNotWildReel = reelIndex;
+                  break;
+              } else {
+                matchCount++;
+              }
+          }
+          
+          if (matchCount > 0 && slotMult[_wildSlot][matchCount - 1] > 0) {
+              // bars - wild check
+              let currentLineWin = slotMult[_wildSlot][
+                  matchCount - 1
+              ];
+              return [currentLineWin, _wildSlot];
+          } else {
+              matchCount++;
+              firstSlot = _spinResult[winLines[currentLine][startNotWildReel]][startNotWildReel];
+              for (let reelIndex = startNotWildReel + 1; reelIndex < 5; reelIndex++) {
+                  if (
+                      (_spinResult[winLines[currentLine][reelIndex]][reelIndex] == firstSlot)
+                      || 
+                      (_spinResult[winLines[currentLine][reelIndex]][reelIndex] == _wildSlot)
+                  ) {
+                      matchCount++;
+                  } else {
+                      break;
+                  }
+              }
+              if (matchCount>0) {
+                  let currentWinMult = slotMult[firstSlot][
+                      matchCount - 1
+                  ];
+
+                  return [currentWinMult, firstSlot];
+              }
+          }
+          return [0, 0];
+      }
+    </script>
   </body>
 </html>

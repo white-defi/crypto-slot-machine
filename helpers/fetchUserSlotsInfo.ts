@@ -31,7 +31,8 @@ const fetchUserSlotsInfo = (options) => {
           calls: {
             tokensAmount:   { func: 'getUserBalance', args: [ activeWallet ] },
             tokenPrice:     { func: 'getTokenPrice' },
-            tokenCurrency:  { func: 'getCurrency' }
+            tokenCurrency:  { func: 'getCurrency' },
+            tokensBank:     { func: 'getBankInTokens' }
           }
         }).then((mcAnswer) => {
           resolve(mcAnswer)

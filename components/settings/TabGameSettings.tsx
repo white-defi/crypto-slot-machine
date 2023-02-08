@@ -322,6 +322,30 @@ export default function TabMain(options) {
             )}
             {isSlotMachineFetched && currencyTokenInfo && (
               <>
+                {toggleGroup({
+                  title: `Flush Random generator`,
+                  isOpened: isTabOpened.FlushGenerator,
+                  onToggle: () => { onToggleTab(`FlushGenerator`) },
+                  content: (
+                    <div className={styles.subFormInfo}>
+                    
+                      <div>
+                        <strong className={styles.infoBoxGreen}>
+                          It is recommended to periodically flash the random number generator with the admin seed, to avoid predicting the state of the contract and cheating
+                        </strong>
+                      </div>
+                      <div className={styles.actionsRow}>
+                        <button disabled={isFlushRandom} onClick={doFlushRandom}>
+                          {isFlushRandom
+                            ? `Flushing random generator...`
+                            : `Flush random generator`
+                          }
+                        </button>
+                      </div>
+
+                    </div>
+                  )
+                })}
                 {/*
                 {toggleGroup({
                   title: `SlotMachine preview`,
@@ -465,21 +489,13 @@ export default function TabMain(options) {
                             </strong>
                           </div>
                         </div>
-                        <div className={styles.infoRow}>
-                          <label>Flush random:</label>
-                          <div>
-                            <div>
-                              <button disabled={isFlushRandom} onClick={doFlushRandom}>
-                                {isFlushRandom
-                                  ? `Flushing random generator...`
-                                  : `Flush random generator`
-                                }
-                              </button>
-                            </div>
-                            <strong>
-                              It is recommended to periodically flash the random number generator with the admin seed, to avoid predicting the state of the contract and cheating
-                            </strong>
-                          </div>
+                        <div className={styles.actionsRow}>
+                          <button disabled={isSaveSlotsChanges} onClick={doSaveSlotsChanges}>
+                            {isSaveSlotsChanges
+                              ? `Saving changes...`
+                              : `Save changes`
+                            }
+                          </button>
                         </div>
                       </div>
                     </div>

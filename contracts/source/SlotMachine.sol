@@ -440,6 +440,7 @@ contract SlotMachine is Ownable {
             ];
             return (currentLineWin, _wildSlot);
         } else {
+            matchCount++;
             firstSlot = _spinResult[winLines[currentLine][startNotWildReel]][startNotWildReel];
             for (uint256 reelIndex = startNotWildReel + 1; reelIndex < 5; reelIndex++) {
                 if (
@@ -454,7 +455,7 @@ contract SlotMachine is Ownable {
             }
             if (matchCount>0) {
                 uint256 currentWinMult = slotMult[firstSlot][
-                    matchCount
+                    matchCount - 1
                 ];
 
                 return (currentWinMult, firstSlot);
@@ -570,8 +571,10 @@ contract SlotMachine is Ownable {
     );
     
     function doSpin(uint256 bet, uint256 lineCount, bytes32 _seed) public /* returns(uint256[5] memory, uint256, bool[] memory) */ {
+        require(bet <= _maxBet, "Bet too big");
         uint256 betAmount = bet * (lineCount+1);
         require(_userBalance[msg.sender] >= betAmount, "Balance not enought");
+        require(lineCount < _maxLines, "Too many lines");
         require(lineCount < winLines.length, "Too many lines");
         
         _spinId.increment();

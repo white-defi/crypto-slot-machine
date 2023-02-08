@@ -41,7 +41,8 @@ const parseInfo = (info) => {
     bankTokenInfo: {},
     tokenPrice: 0,
     texts: {},
-    design: {}
+    design: {},
+    menu: false,
   }
   const result = JSON.parse(info)
 
@@ -57,6 +58,7 @@ export default function useStorage() {
   const [storageIsLoading, setStorageIsLoading] = useState(true)
   const [storageTexts, setStorageTexts] = useState({})
   const [storageDesign, setStorageDesign] = useState({})
+  const [storageMenu, setStorageMenu] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const [error, setError] = useState(null)
@@ -104,6 +106,7 @@ export default function useStorage() {
           setIsInstalled(!(owner === ZERO_ADDRESS))
           setStorageTexts(parsed.texts)
           setStorageDesign(parsed.design)
+          setStorageMenu(parsed.menu)
           const connectedWallet = await getConnectedAddress()
           if (connectedWallet && connectedWallet.toLowerCase() === owner.toLowerCase()) {
             setIsOwner(true)
@@ -124,6 +127,7 @@ export default function useStorage() {
     isInstalled,
     error,
     storageTexts,
+    storageMenu,
     storageDesign,
     setDoReloadStorage,
   }

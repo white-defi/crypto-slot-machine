@@ -5,6 +5,7 @@ export const defaultDesign = {
   backgroundImage: ``,
   baseTextColor: '#FFFFFF',
   hrColor: '#817e7e',
+  backgroundImage: `/_MYAPP/assets/images/bg.jpg`,
 
   symbol_0: `/_MYAPP/vendor/images/symbols/apple.png`,
   symbol_1: `/_MYAPP/vendor/images/symbols/bar.png`,

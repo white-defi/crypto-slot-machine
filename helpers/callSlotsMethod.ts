@@ -25,34 +25,38 @@ const callSlotsMethod = (options) => {
         console.log('>>> slotsContractData', slotsContractData)
         console.log(contractAddress, method, args)
         console.log('>> amount', weiAmount)
-        const sendArgs = await calcSendArgWithFee(
+        calcSendArgWithFee(
           activeWallet,
           contract,
           method,
           args || []
-        )
-        if (weiAmount) sendArgs.weiAmount = weiAmount
-        console.log('>> amount 2', weiAmount, sendArgs)
+        ).then((sendArgs) => {
+          if (weiAmount) sendArgs.weiAmount = weiAmount
+          console.log('>> amount 2', weiAmount, sendArgs)
 
-        contract.methods[method](...(args || []))
-          .send(sendArgs)
-          .on('transactionHash', (hash) => {
-            console.log('transaction hash:', hash)
-            onTrx(hash)
-          })
-          .on('error', (error) => {
-            console.log('transaction error:', error)
-            onError(error)
-            reject(error)
-          })
-          .on('receipt', (receipt) => {
-            console.log('transaction receipt:', receipt)
-            onSuccess(receipt)
-          })
-          .then((res) => {
-            resolve(res)
-            onFinally(res)
-          })
+          contract.methods[method](...(args || []))
+            .send(sendArgs)
+            .on('transactionHash', (hash) => {
+              console.log('transaction hash:', hash)
+              onTrx(hash)
+            })
+            .on('error', (error) => {
+              console.log('transaction error:', error)
+              onError(error)
+              reject(error)
+            })
+            .on('receipt', (receipt) => {
+              console.log('transaction receipt:', receipt)
+              onSuccess(receipt)
+            })
+            .then((res) => {
+              resolve(res)
+              onFinally(res)
+            })
+        }).catch((err) => {
+          console.log('>>> callSlotsMethod', err)
+          reject(err)
+        })
       } else {
         reject('NO_ACTIVE_ACCOUNT')
       }

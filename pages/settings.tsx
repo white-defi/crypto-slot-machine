@@ -6,6 +6,7 @@ import TabMain from "../components/settings/TabMain"
 import TabDesign from "../components/settings/TabDesign"
 import TabTexts from "../components/settings/TabTexts"
 import TabGameSettings from "../components/settings/TabGameSettings"
+import TabMenu from "../components/settings/TabMenu"
 
 
 import useStorage from "../storage/"
@@ -41,6 +42,7 @@ import {
 const settingsTabs = {
   main: `Main settings`,
   gamesettings: `Game settings`,
+  menu: `Menu Items`,
   texts: `Edit texts`,
   design: `Design`,
 }
@@ -76,6 +78,7 @@ const Settings: NextPage = (props) => {
     setDoReloadStorage,
     storageTexts,
     storageDesign,
+    storageMenu,
     getDesign,
   } = props
 
@@ -319,6 +322,7 @@ const Settings: NextPage = (props) => {
     getActiveChain,
     storageDesign,
     storageData,
+    storageMenu,
     activeWeb3,
     getDesign,
   }
@@ -326,6 +330,7 @@ const Settings: NextPage = (props) => {
   const tabGameSettings = new TabGameSettings(_tabOptions)
   const tabDesign = new TabDesign(_tabOptions)
   const tabTexts = new TabTexts(_tabOptions)
+  const tabMenu = new TabMenu(_tabOptions)
 
   /* ------------------------------------------- */
   const renderActiveChainInfo = () => {
@@ -395,6 +400,7 @@ const Settings: NextPage = (props) => {
                       {activeTab === `gamesettings` && tabGameSettings.render()}
                       {activeTab === `texts` && tabTexts.render()}
                       {activeTab === `design` && tabDesign.render()}
+                      {activeTab === `menu` && tabMenu.render()}
                       {/* -------------------------------------------------*/ }
                     </>
                   ) : (
