@@ -7,7 +7,17 @@
     <div id="wrap">
 
       <div id="game">
-        <canvas id="slots" width="320" height="100"></canvas><br />
+        <style>
+          #slots {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border: 5px solid #02213a;
+            box-shadow: 1px 1px 5px 5px #0000007a;
+            border-radius: 10px;
+          }
+        </style>
+        <canvas id="slots"></canvas><br />
         <button type="button" onclick="SLOT_MACHINE.spin();">Spin</button>
         <button type="button" onclick="SLOT_MACHINE.stop([[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3]], () => { console.log('stopped' + new Date()) });">Stop</button>
         
@@ -45,7 +55,7 @@
     <script type="text/javascript">
       SLOT_MACHINE.init({
         canvasId: 'slots',
-        slotSize: 128,
+        slotSize: 200,
         isFixedCanvas: true,
         ownAssets: {
           images: {

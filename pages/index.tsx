@@ -81,6 +81,7 @@ const Slots: NextPage = (props) => {
   const [ winLines, setWinLines ] = useState([])
   const [ winLinesAmount, setWinLinesAmount ] = useState([])
   const [ winLinesSwitchCounter, setWinLinesSwitchCounter ] = useState(0)
+  const [ lastWin, setLastWin ] = useState(0)
   
   const processError = (error, error_namespace) => {
     let metamaskError = false
@@ -211,7 +212,6 @@ const Slots: NextPage = (props) => {
         const canvas = document.getElementById(`renderCanvas`)
         if (canvas && window.SLOT_MACHINE) {
           setSlotMachine(window.SLOT_MACHINE)
-          console.log('>>> setSlot machine')
           window.SLOT_MACHINE.init({
             canvasId: 'renderCanvas',
             slotSize: 200,
@@ -252,22 +252,6 @@ const Slots: NextPage = (props) => {
   
   const [ spinResult, setSpinResult ] = useState({})
 
-/*
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (userTokensAdd > 0) {
-        setUserTokens((prev) => {
-          return prev+1
-        })
-        setUserTokensAdd((prev) => {
-          return prev-1;
-        })
-      }
-    }, 10)
-    return () => { clearInterval(timer) }
-  })
-*/
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if (slotMachine) {
@@ -302,6 +286,7 @@ const Slots: NextPage = (props) => {
   })
 
   const doTest = () => {}
+  
   useEffect(() => {
     if (slotMachine && slotMachine.isInited() && spinResult && spinResult.spinWinLines) {
       const newWinLines = []
@@ -312,14 +297,8 @@ const Slots: NextPage = (props) => {
         }
       })
       if (newWinLines.length) {
-        //const amount = newWinLinesAmount.shift()
-        //const line = newWinLines.shift()
         setWinLinesAmount(newWinLinesAmount)
         setWinLines(newWinLines)
-        //console.log(amount)
-        //setWinAmountCounter(amount)
-        //slotMachine.setActiveWinLine(line, spinResult.slots)
-        //setWinLinesSwitchCounter(0)
       }
     }
   }, [ spinResult ])
@@ -564,7 +543,14 @@ const Slots: NextPage = (props) => {
     setIsBuyTokens(true)
   }
   const withdrawTokens = () => {
+    openConfirmWindow({
+      title: `Withdraw`,
+      message: `Convert your tokens to ${bankTokenInfo.symbol} and withdraw?`,
+      onConfirm: () => {
+      }
+    })
   }
+  
   const mintChainInfo = CHAIN_INFO(chainId)
   return (
     <div className={styles.container}>
@@ -599,7 +585,7 @@ const Slots: NextPage = (props) => {
               color: #ffd400;
               text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
             }
-            .slotMachine CANVAS {
+            .slotMachine #renderCanvas {
               width: 100%;
               max-width: 640px;
               margin: 0 auto;
@@ -619,6 +605,7 @@ const Slots: NextPage = (props) => {
               margin-bottom: 10px;
               margin-top: 10px;
               border-top: 1px solid #FFF;
+              color: #fdea02;
               text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
             }
             .slotMachine .balanceHolder STRONG {
@@ -682,7 +669,7 @@ const Slots: NextPage = (props) => {
           <div className="bankAmount">
             {bankTokenInfo && bankTokenInfo.symbol && (
               <>
-                Bank: {tokensBank} Tokens ({tokensBankInERC} {bankTokenInfo.symbol})
+                Bank: {tokensBank} Tokens <br />({tokensBankInERC} {bankTokenInfo.symbol})
               </>
             )}
           </div>
@@ -699,10 +686,15 @@ const Slots: NextPage = (props) => {
               <label>Your Tokens:</label>
               <strong>{userTokens}</strong>
             </div>
-            {winAmountCounter > 0 && (
+            {(winAmountCounter > 0) ? (
               <div>
                 <label>Line win:</label>
                 <strong>{winAmountCounter}</strong>
+              </div>
+            ) : (
+              <div>
+                <label>Last win:</label>
+                <strong>{lastWin}</strong>
               </div>
             )}
           </div>

@@ -592,6 +592,26 @@
     const bH = mainBackBuffer.height
     can.height = (bH * cW) / bW
   }
+  
+  const setupResize = () => {
+    if (isFixedCanvas) {
+      resizeCanvas()
+      let onResizeTimer = 0
+      new ResizeObserver((entr) => {
+        try {
+          clearTimeout(onResizeTimer)
+          onResizeTimer = setTimeout(() => {
+            console.log('do resize')
+            can.width = entr[0].contentRect.width
+            const cW = can.width
+            const bW = mainBackBuffer.width
+            const bH = mainBackBuffer.height
+            can.height = (bH * cW) / bW
+          }, 500)
+        } catch (e) {}
+      }).observe(can)
+    }
+  }
   const init = (options) => {
     const {
       canvasId,
@@ -607,7 +627,6 @@
 
     isFixedCanvas = _isFixedCanvas
     slotSize = _slotSize
-
     assets.images = {
       ...assets.images,
       ...ownAssets.images,
@@ -620,12 +639,13 @@
     recalcRenderValues()
     
     can = document.getElementById(canvasId)
-    
+
 
 
     preloadAssets(() => {
       if (assetsIsLoaded()) {
         prepareMainBackBuffer()
+        setupResize()
         prepareBg()
         prepareReel()
         prepareWinAnimation()
