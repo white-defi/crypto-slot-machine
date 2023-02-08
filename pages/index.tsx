@@ -1,6 +1,8 @@
 import { BigNumber, ethers } from "ethers"
 import type { NextPage } from "next"
 import { useEffect, useState } from "react"
+import useTimer from "../helpers/useTimer"
+
 import styles from "../styles/Home.module.css"
 
 import { setupWeb3, switchOrAddChain, doConnectWithMetamask, isMetamaskConnected } from "../helpers/setupWeb3"
@@ -44,7 +46,15 @@ const Slots: NextPage = (props) => {
     getDesign,
     openConfirmWindow,
   } = props
-  
+
+  /*
+  const [ boo, foo ] = useTimer({
+    delay: 1000,
+    callback: () => {
+      console.log('timer tick')
+    }
+  })
+  */
   const [ chainId, setChainId ] = useState(storageData?.chainId)
   const [ slotsContractAddress, setSlotsContractAddress ] = useState(storageData?.slotsContractAddress)
   const [ bankTokenInfo, setBankTokenInfo ] = useState(storageData?.bankTokenInfo)
@@ -245,11 +255,10 @@ const Slots: NextPage = (props) => {
     return () => { clearInterval(timer) }
   })
 */
+
   useEffect(() => {
-  /*
     const timer = setTimeout(() => {
       if (slotMachine) {
-        console.log('>>> win line timer')
         if (winLinesSwitchCounter > 0) {
           setWinLinesSwitchCounter((prev) => {
             return prev - 1
@@ -268,22 +277,19 @@ const Slots: NextPage = (props) => {
             })
             setWinLinesSwitchCounter(winLinesSwitchDeplay)
           } else {
-            console.log('>>> do hide')
-            setWinAmountCounter(0)
-            slotMachine.hideActiveWinLine()
+            if (winAmountCounter > 0) {
+              setWinAmountCounter(0)
+              slotMachine.hideActiveWinLine()
+            }
           }
         }
       }
     }, 1000)
     return () => { clearTimeout(timer) }
-    */
-    console.log(winLines)
-  }, [ winLines ])
-  
-  const doTest = () => {
     
-  }
-  
+  })
+
+  const doTest = () => {}
   useEffect(() => {
     if (slotMachine && slotMachine.isInited() && spinResult && spinResult.spinWinLines) {
       const newWinLines = []
@@ -294,12 +300,14 @@ const Slots: NextPage = (props) => {
         }
       })
       if (newWinLines.length) {
-        const amount = newWinLinesAmount.shift()
-        const line = newWinLines.shift()
+        //const amount = newWinLinesAmount.shift()
+        //const line = newWinLines.shift()
         setWinLinesAmount(newWinLinesAmount)
         setWinLines(newWinLines)
-        slotMachine.setActiveWinLine(line, spinResult.slots)
-        setWinLinesSwitchCounter(winLinesSwitchDeplay)
+        //console.log(amount)
+        //setWinAmountCounter(amount)
+        //slotMachine.setActiveWinLine(line, spinResult.slots)
+        //setWinLinesSwitchCounter(0)
       }
     }
   }, [ spinResult ])
@@ -531,12 +539,9 @@ const Slots: NextPage = (props) => {
 
 
   useEffect(() => {
-    console.log('>>> lineCount', lineCount, slotMachine, slotMachine ? slotMachine.isInited() : false)
     if (slotMachine && slotMachine.isInited()) {
       slotMachine.render_reel()
-      console.log('>>> lineCount', lineCount)
       for (let line = 0; line < lineCount; line++ ) {
-        console.log('>>> render win line', line)
         slotMachine.setPreviewWinLines(line + 1)
       }
     }
@@ -575,6 +580,13 @@ const Slots: NextPage = (props) => {
             .slotMachine {
               width: 100%;
             }
+            .slotMachine .bankAmount {
+              font-size: 14pt;
+              font-weight: bold;
+              padding-bottom: 10px;
+              color: #ffd400;
+              text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+            }
             .slotMachine CANVAS {
               width: 100%;
               max-width: 640px;
@@ -595,6 +607,10 @@ const Slots: NextPage = (props) => {
               margin-bottom: 10px;
               margin-top: 10px;
               border-top: 1px solid #FFF;
+              text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+            }
+            .slotMachine .balanceHolder STRONG {
+              padding-left: 10px;
             }
             .slotMachine .balanceButtonsHolder {
               display: flex;
@@ -643,7 +659,7 @@ const Slots: NextPage = (props) => {
           <div className="bankAmount">
             {bankTokenInfo && bankTokenInfo.symbol && (
               <>
-                Tokens in bank: {tokensBank} ({tokensBankInERC} {bankTokenInfo.symbol})
+                Bank: {tokensBank} Tokens ({tokensBankInERC} {bankTokenInfo.symbol})
               </>
             )}
           </div>
@@ -657,7 +673,7 @@ const Slots: NextPage = (props) => {
           </div>
           <div className="balanceHolder">
             <div>
-              <label>Tokens:</label>
+              <label>Your Tokens:</label>
               <strong>{userTokens}</strong>
             </div>
             {winAmountCounter > 0 && (
@@ -684,6 +700,9 @@ const Slots: NextPage = (props) => {
           </div>
           <div>
             <button className={`${styles.mainButton}`}  onClick={doShowWinCombinations}>Show Win combinations</button>
+          </div>
+          <div>
+            <button onClick={doTest}>Test</button>
           </div>
           {slotMultipler !== false && (
             <>

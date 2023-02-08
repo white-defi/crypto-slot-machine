@@ -574,8 +574,8 @@ contract SlotMachine is Ownable {
         require(bet <= _maxBet, "Bet too big");
         uint256 betAmount = bet * (lineCount+1);
         require(_userBalance[msg.sender] >= betAmount, "Balance not enought");
-        require(lineCount < _maxLines, "Too many lines");
-        require(lineCount < winLines.length, "Too many lines");
+        require(lineCount <= _maxLines, "Too many lines");
+        require(lineCount <= winLines.length, "Too many lines");
         
         _spinId.increment();
         uint256 currentSpinId = _spinId.current();

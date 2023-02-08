@@ -48,6 +48,7 @@ export const MULTICALL_CONTRACTS = {
   42161: '0x80C7DD17B01855a6D2347444a0FCC36136a314de',
   421611: '0xf27ee99622c3c9b264583dacb2cce056e194494f',
   250: '0x22D4cF72C45F8198CfbF4B568dBdB5A85e8DC0B5',
+  420: '0x83048f0Bf34FEeD8CEd419455a4320A735a92e9d',
 }
 
 export const AVAILABLE_NETWORKS_INFO = [
@@ -181,6 +182,16 @@ export const AVAILABLE_NETWORKS_INFO = [
     isTestnet: false,
     nativeCurrency: CURRENCIES.FTM
   },
+  {
+    slug: 'optimism_testnet',
+    chainName: 'Optimism - testnet',
+    chainId: '0x1A4',
+    networkVersion: 420,
+    rpcUrls: ['https://opt-goerli.g.alchemy.com/v2/2bOuoK-j7jE9UC9tyY25b9QV9QT8dOz7'],
+    blockExplorerUrls: ['https://goerli-optimism.etherscan.io'],
+    isTestnet: false,
+    nativeCurrency: CURRENCIES.ETH
+  }
 ];
 
 export const CHAIN_EXPLORER_LINK = (options) => {
