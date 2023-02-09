@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/utils/Counters.sol";
@@ -266,8 +266,11 @@ contract SlotMachine is Ownable {
         _wildSlot = _newWildSlot;
     }
 
+    bool private _onlyEth = false;
+    uint256 private _ethTokenPrice = 1000000;
+
     uint256 private _maxBet = 100;
-    uint256 private _maxLines = 19;
+    uint256 private _maxLines = 20;
 
     function getMaxBet() public view returns (uint256) {
         return _maxBet;
@@ -367,12 +370,15 @@ contract SlotMachine is Ownable {
 
 
     function flushRandom(bytes32 _flushSeed) public onlyOwner {
+        uint256 blockOffset = getRandom(_flushSeed, 5);
         uint256 randomness = uint256(keccak256(abi.encodePacked(
             block.timestamp,
             _prevSeed,
             _prevRS,
             _curRS,
             _flushSeed,
+            blockhash(block.number - blockOffset),
+            block.difficulty,
             _spinId.current()
         )));
         _prevRS = _curRS;
@@ -386,10 +392,8 @@ contract SlotMachine is Ownable {
             _prevSeed,
             _curRS,
             _prevRS,
-            blockhash(block.number),
-            block.coinbase,
+            blockhash(block.number - 1),
             block.difficulty,
-            block.gaslimit,
             tx.gasprice,
             msg.sender,
             gasleft(),
@@ -465,12 +469,16 @@ contract SlotMachine is Ownable {
     }
 
     function getAllowance(address erc20) view private returns(uint256) {
+        require(address(currency) != address(0), "ERC20 not setted. Only eth");
+
         IERC20 token = IERC20(erc20);
         uint256 allowance = token.allowance(msg.sender,address(this));
         return allowance;
     }
 
     function buyTokens(uint256 tokenAmount) public {
+        require(address(currency) != address(0), "ERC20 not setted. Only eth");
+
         uint256 ercAmount = tokenAmount * tokenPrice;
         uint256 buyerBalance = currency.balanceOf(msg.sender);
         require(buyerBalance >= ercAmount, "You do not have enough tokens on your balance to pay");
@@ -486,12 +494,20 @@ contract SlotMachine is Ownable {
     }
 
     function getBankInTokens() public view returns (uint256) {
+        if (address(currency) == address(0)) return 0;
+
         uint256 ercBank = currency.balanceOf(address(this));
         uint256 tokenBank = SafeMath.div(ercBank, tokenPrice);
         return tokenBank;
     }
 
+    receive () external payable  {
+        require(address(currency) == address(0), "ERC20 is setted. Eth bet not allowed");
+    }
+
     function withdrawTokens() public {
+        require(address(currency) != address(0), "ERC20 not setted. Only eth");
+
         require(_userBalance[msg.sender] > 0, "Not enouth tokens for withdraw");
         uint256 ercAmount = _userBalance[msg.sender] * tokenPrice;
         
@@ -501,6 +517,16 @@ contract SlotMachine is Ownable {
 
         currency.transfer(msg.sender, ercAmount);
         _userBalance[msg.sender] = 0;
+    }
+
+    function withdrawBank() public onlyOwner {
+        if (address(currency) == address(0)) {
+            // Withdraw eth bank
+            payable(msg.sender).transfer(address(this).balance);
+        } else {
+            uint256 bankAmount = currency.balanceOf(address(this));
+            currency.transfer(msg.sender, bankAmount);
+        }
     }
 
     function getCurrency() public view returns (address) {
@@ -514,9 +540,6 @@ contract SlotMachine is Ownable {
     }
     function setTokenPrice(uint256 newTokenPrice) public onlyOwner {
         tokenPrice = newTokenPrice;
-    }
-    function addUserBalance(uint256 bets) public {
-        _userBalance[msg.sender] += bets;
     }
 
     function getUserBalance(address user) public view returns (uint256) {
@@ -570,29 +593,8 @@ contract SlotMachine is Ownable {
         uint256 maxWinSlot
     );
     
-    function doSpin(uint256 bet, uint256 lineCount, bytes32 _seed) public /* returns(uint256[5] memory, uint256, bool[] memory) */ {
-        require(bet <= _maxBet, "Bet too big");
-        uint256 betAmount = bet * (lineCount+1);
-        require(_userBalance[msg.sender] >= betAmount, "Balance not enought");
-        require(lineCount <= _maxLines, "Too many lines");
-        require(lineCount <= winLines.length, "Too many lines");
-        
-        _spinId.increment();
-        uint256 currentSpinId = _spinId.current();
-
-        //bytes32 _seed = 0x0000000000000000000000000000000000000000000000000000000000000000;
-        
+    function _doSpin(uint256 currentSpinId, uint256 bet, uint256 lineCount, bytes32 _seed) private returns ( uint256 /* totalWin */ ) {
         uint256[5][3] memory _spinResult = spinReels(_seed);
-        
-        /*
-        uint256[5][3] memory _spinResult = [
-            [uint256(8), uint256(8), uint256(8), uint256(8), uint256(8)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-            [uint256(1), uint256(1), uint256(1), uint256(1), uint256(1)]
-        ];
-        */
-        
-
 
         uint256 maxLine = 0;
         uint256 maxLineWin = 0;
@@ -613,8 +615,7 @@ contract SlotMachine is Ownable {
                 maxWinSlot = winSlot;
             }
         }
-        _userBalance[msg.sender] = _userBalance[msg.sender] - betAmount + totalWin;
-        
+
         playerSpins[msg.sender].push(
             Spin({
                 spinId:     currentSpinId,
@@ -630,7 +631,7 @@ contract SlotMachine is Ownable {
         emit ReelsSpinned(
             msg.sender,
             bet,
-            lineCount+1,
+            lineCount,
             totalWin,
             _spinResult[1],
             spinWinLines,
@@ -640,5 +641,45 @@ contract SlotMachine is Ownable {
             maxWinSlot
         );
 
+        return totalWin;
+    }
+// 0x0000000000000000000000000000000000000000000000000000000000000000
+    function doSpinEth(uint256 bet, uint256 lineCount, bytes32 _seed) public payable {
+        require(address(currency) == address(0), "ERC20 is setted. Eth bet not allowed");
+        require(bet <= _maxBet, "Bet too big");
+        uint256 betAmount = bet * lineCount;
+        require(lineCount <= _maxLines, "Too many lines");
+        require(lineCount <= winLines.length + 1, "Too many lines");
+
+        uint256 betAmountEth = betAmount * tokenPrice;
+        require(msg.value >= betAmountEth, "You have not paid enough for spin");
+
+        _spinId.increment();
+        uint256 currentSpinId = _spinId.current();
+
+        uint256 totalWin = _doSpin(currentSpinId, bet, lineCount, _seed);
+        if (totalWin > 0) {
+            uint256 weiWin = totalWin * tokenPrice;
+            require(address(this).balance >= weiWin, "Address: insufficient balance");
+
+            (bool success, ) = msg.sender.call{value: weiWin}("");
+            require(success, "Address: unable to send value, recipient may have reverted");
+        }
+    }
+
+    function doSpin(uint256 bet, uint256 lineCount, bytes32 _seed) public {
+        require(address(currency) != address(0), "ERC20 not setted. Only eth");
+        require(bet <= _maxBet, "Bet too big");
+        uint256 betAmount = bet * lineCount;
+        require(_userBalance[msg.sender] >= betAmount, "Balance not enought");
+        require(lineCount <= _maxLines, "Too many lines");
+        require(lineCount <= winLines.length + 1, "Too many lines");
+        
+        _spinId.increment();
+        uint256 currentSpinId = _spinId.current();
+
+        uint256 totalWin = _doSpin(currentSpinId, bet, lineCount, _seed);
+
+        _userBalance[msg.sender] = _userBalance[msg.sender] - betAmount + totalWin;
     }
 }

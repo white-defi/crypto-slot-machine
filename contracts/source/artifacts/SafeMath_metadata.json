@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.18+commit.87f61d96"
+		"version": "0.8.17+commit.8df45f5f"
 	},
 	"language": "Solidity",
 	"output": {
@@ -21,7 +21,7 @@
 		"compilationTarget": {
 			"source/SlotMachine.sol": "SafeMath"
 		},
-		"evmVersion": "paris",
+		"evmVersion": "london",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -98,11 +98,11 @@
 			]
 		},
 		"source/SlotMachine.sol": {
-			"keccak256": "0x07936fdd6cd6f071dc57c0921386d468161ddf155457a220488dc40bc3cc5565",
+			"keccak256": "0x717e35f5d8371f2184a3a8922524c461ff7c98a60986ea2e5659684a5b8e288c",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://ad648cf581e920254c438c0c4fa3fb31b94e03cf37686e9f29553c93c1de88e8",
-				"dweb:/ipfs/QmRqcZthY4rEhqyNsZBTirNGY1u7CRu75MsuyiWt9oTBjz"
+				"bzz-raw://08ee3debd850a827fb789a889d26e3ba31c31853748e8e91205a50de4e2f2231",
+				"dweb:/ipfs/Qme4MWxGZ8jSpWb71cLXTEUJ6goEqCEA7KRFxwEDrHXVr3"
 			]
 		}
 	},

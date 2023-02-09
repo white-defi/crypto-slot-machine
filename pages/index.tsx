@@ -152,7 +152,7 @@ const Slots: NextPage = (props) => {
         setIsTokenBankERCFetched(true)
       })
     }
-  }, [ chainId, slotsContractAddress, bankTokenInfo ])
+  }, [ chainId, slotsContractAddress, bankTokenInfo, isTokenBankERCFetched ])
 
   useEffect(() => {
     if (activeWeb3 && address && chainId && slotsContractAddress) {
@@ -334,8 +334,11 @@ const Slots: NextPage = (props) => {
         const spinData = answer.events.ReelsSpinned.returnValues
         const {
           slots,
-          spinWinLines
+          spinWinLines,
+          winAmount
         } = spinData
+
+        
         const slotUp = (v) => {
           return (v == 0) ? 8 : v - 1
         }
@@ -349,6 +352,7 @@ const Slots: NextPage = (props) => {
         ]
         console.log(spinData)
         slotMachine.stop(resultSlots, () => {
+          setLastWin(winAmount)
           setUserTokens((prev) => {
             return prev + Number(spinData.winAmount)
           })
@@ -547,6 +551,28 @@ const Slots: NextPage = (props) => {
       title: `Withdraw`,
       message: `Convert your tokens to ${bankTokenInfo.symbol} and withdraw?`,
       onConfirm: () => {
+        //withdrawTokens
+        callSlotsMethod({
+          activeWeb3,
+          contractAddress: slotsContractAddress,
+          method: 'withdrawTokens',
+          args: [],
+          onTrx: (txHash) => {
+            addNotify(`Withdrawing... TX ${txHash}`, `success`)
+          },
+          onSuccess: (receipt) => {
+            
+          },
+          onError: (err) => {
+            addNotify(`Fail withdraw tokens. ${err.message ? err.message : ''}`, `error`)
+          },
+          onFinally: (answer) => {
+            addNotify(`Tokens converted and withdrawed`, `success`)
+            updateUserSlotsState()
+          }
+        }).catch((err) => {
+          addNotify(`Fail withdraw tokens. ${err.message ? err.message : ''}`, `error`)
+        })
       }
     })
   }
@@ -607,6 +633,15 @@ const Slots: NextPage = (props) => {
               border-top: 1px solid #FFF;
               color: #fdea02;
               text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+            }
+            .slotMachine .balanceHolder DIV {
+              width: 33%;
+            }
+            .slotMachine .balanceHolder DIV:first-child {
+              text-align: left;
+            }
+            .slotMachine .balanceHolder DIV:last-child {
+              text-align: right;
             }
             .slotMachine .balanceHolder STRONG {
               padding-left: 10px;
@@ -686,17 +721,16 @@ const Slots: NextPage = (props) => {
               <label>Your Tokens:</label>
               <strong>{userTokens}</strong>
             </div>
-            {(winAmountCounter > 0) ? (
+            {(winAmountCounter > 0) && (
               <div>
-                <label>Line win:</label>
+                <label className="winInLine">Line win:</label>
                 <strong>{winAmountCounter}</strong>
               </div>
-            ) : (
-              <div>
-                <label>Last win:</label>
-                <strong>{lastWin}</strong>
-              </div>
             )}
+            <div>
+              <label>Last win:</label>
+              <strong>{lastWin}</strong>
+            </div>
           </div>
           <canvas id="renderCanvas"></canvas>
           <Script strategy="lazyOnload" src="/_MYAPP/vendor/slots.js"></Script>
